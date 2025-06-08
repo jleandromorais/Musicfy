@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import PagP from './Pages/pagPrincipal';
 import AuthPage from './Pages/Login';
+import Products from './components/Product'; // Note o "P" maiúsculo
 
 function App() {
   return (
@@ -10,7 +11,7 @@ function App() {
       <Routes>
         <Route path="/" element={<PagP />} />
         <Route path="/login" element={<AuthPage />} />
-        {/* Adicione mais rotas conforme necessário */}
+        <Route path="/products" element={<Products />} />
       </Routes>
     </Router>
   );

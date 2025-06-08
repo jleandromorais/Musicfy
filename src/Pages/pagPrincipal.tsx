@@ -1,5 +1,6 @@
 import Navbar from "../components/NavbarE";
 import HeroSection from "../components/Hero";
+import Products from "../components/Product";
 
 const PagP = () => {
     return (
@@ -8,6 +9,7 @@ const PagP = () => {
             <Navbar />
             <HeroSection />
             {/* Outros componentes podem ser adicionados aqui */}
+            <Products/>
         </div>
     );
 }
