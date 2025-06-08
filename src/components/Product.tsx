@@ -1,5 +1,7 @@
 import React, { useRef } from 'react'; // Importe useRef do React
 import { FaShoppingCart, FaChevronLeft, FaChevronRight } from 'react-icons/fa'; // Importe os ícones de seta e carrinho
+// Biblioteca para animações ao rolar a página (Animate On Scroll).
+
 
 const Products = () => {
     // Interface para a estrutura do produto
@@ -100,7 +102,10 @@ const Products = () => {
             precoAntigo: 100
         },
     ];
+    
 
+
+   
     // Cria uma referência para a div que conterá os cards e será rolada
     const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -139,7 +144,7 @@ const Products = () => {
                     {/* Seta de Navegação para a Esquerda */}
                     <button
                         onClick={scrollLeft}
-                        className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-gray-800 bg-opacity-70 text-white p-3 rounded-full z-10 hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        className="absolute left-0 top-1/2 transform -translate-y-1/2  bg-opacity-70 text-white p-3 rounded-full z-10 "
                         aria-label="Scroll left" // Acessibilidade
                     >
                         <FaChevronLeft className="text-xl" />
@@ -160,12 +165,15 @@ const Products = () => {
                         {products.map((product) => (
                             <div
                                 key={product.id} // Chave única para cada item na lista (importante para React)
-                                className="flex-shrink-0 w-72 // <--- flex-shrink-0 para não encolher, w-72 para largura fixa do card (288px)
-                                           bg-[#1C1C1C] rounded-3xl overflow-hidden shadow-lg
-                                           transition-transform duration-300 hover:transform hover:scale-105 hover:shadow-xl group"
+                                className="flex-shrink-0 w-72 
+                                border border-white
+            bg-gradient-to-t from-[#333333] to-[#2E2E2E] 
+            rounded-3xl overflow-hidden shadow-lg 
+            transform transition-transform duration-300 
+            hover:scale-105 hover:shadow-xl group"
                             >
                                 {/* Área da Imagem do Produto */}
-                                <div className="bg-[#2E2E2E] p-6 flex items-center justify-center h-48 rounded-t-3xl">
+                                <div className=" bg-gradient-to-t from-drak-gray to-[#2E2E2E] p-6 flex items-center justify-center h-48 rounded-t-3xl">
                                     <img src={product.img} alt={product.name} className="max-w-full h-full object-contain" />
                                 </div>
                                 
@@ -228,7 +236,7 @@ const Products = () => {
                     {/* Seta de Navegação para a Direita */}
                     <button
                         onClick={scrollRight}
-                        className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-gray-800 bg-opacity-70 text-white p-3 rounded-full z-10 hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-opacity-70 text-white p-3 rounded-full z-10 "
                         aria-label="Scroll right" // Acessibilidade
                     >
                         <FaChevronRight className="text-xl" />
