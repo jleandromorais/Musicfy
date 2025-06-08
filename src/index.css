@@ -1,0 +1,27 @@
+/* src/index.css */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Reset básico para o body */
+body {
+  margin: 0; /* Remove a margem padrão do navegador */
+  padding: 0; /* Garante que não há padding também */
+  box-sizing: border-box; /* Boa prática: box-sizing em toda a página */
+}
+
+/* Restante dos seus estilos CSS, como os de light-mode/dark-mode */
+body.dark-mode {
+  background-color: #1A002F;
+  color: white;
+}
+
+body.light-mode {
+  background-color: #F0F0F0;
+  color: #333333;
+}
+
+body {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
