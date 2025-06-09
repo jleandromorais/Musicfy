@@ -1,10 +1,37 @@
 import React, { useRef } from 'react'; // Importe useRef do React
 import { FaShoppingCart, FaChevronLeft, FaChevronRight } from 'react-icons/fa'; // Importe os ícones de seta e carrinho
 // Biblioteca para animações ao rolar a página (Animate On Scroll).
+import { useNavigate } from 'react-router-dom';
+import { useCart } from '../contexts/CartContext';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 
 const Products = () => {
+    const navigate =useNavigate(); // Hook para navegação, se necessário
+    const {addToCart} = useCart(); // Hook para adicionar produtos ao carrinho, se necessário
     // Interface para a estrutura do produto
+
+   const handleToCart = (product: Product) => {
+  addToCart({
+    id: product.id,
+    name: product.name,
+    price: product.preco,
+    img: product.img,
+  });
+  toast.success(`${product.name} adicionado ao carrinho!`);
+};
+
+
+     const handleBuyNow = (product: Product) => {
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: product.preco,
+      img: product.img,
+    });
+    navigate('/cart'); // Redireciona para o carrinho
+  };
     interface Product {
         id: number;
         img: string; // Caminho para a imagem do produto
@@ -203,6 +230,7 @@ const Products = () => {
                                         <div className="flex space-x-2">
                                             {/* Botão Add to Cart */}
                                             <button
+                                                 onClick={()=>handleToCart(product)}
                                                 className="relative overflow-hidden group flex-1 flex items-center justify-center space-x-1
                                                            bg-gradient-to-br from-orange-500 to-amber-600 text-white px-3 py-1.5 rounded-full
                                                            text-xs font-medium hover:shadow-md hover:shadow-orange-500/20
@@ -217,10 +245,11 @@ const Products = () => {
 
                                             {/* Botão Buy Now */}
                                             <button
+                                       onClick={() => handleBuyNow(product)}
                                                 className="relative overflow-hidden group flex-1 flex items-center justify-center
                                                            bg-gradient-to-br from-amber-500 to-orange-600 text-white px-3 py-1.5 rounded-full
                                                            text-xs font-semibold hover:shadow-md hover:shadow-amber-500/20
-                                                           transition-all duration-250"
+                                                           transition-all duration-250 "
                                             >
                                                 {/* Efeito de brilho (você pode precisar de animações customizadas) */}
                                                 {/* <span className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(252,211,77,0.3)_0%,transparent_70%)] opacity-50 group-hover:opacity-70"></span> */}
