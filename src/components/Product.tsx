@@ -39,8 +39,8 @@ const Products = () => {
         subTitle: string;
         features: string[];
         preco: number;
-        precoAntigo?: number; // Opcional, para o preço riscado
     }
+    
 
     // Lista de produtos (dados de exemplo)
     const products: Product[] = [
@@ -56,7 +56,7 @@ const Products = () => {
                 "Made in Germany",
             ],
             preco: 145,
-            precoAntigo: 199 // Exemplo
+            
         },
         {
             id: 2,
@@ -70,7 +70,6 @@ const Products = () => {
                 "Smart touch controls",
             ],
             preco: 250,
-            precoAntigo: 320
         },
         {
             id: 3,
@@ -84,7 +83,6 @@ const Products = () => {
                 "Lightweight and durable",
             ],
             preco: 150,
-            precoAntigo: 180
         },
         {
             id: 4,
@@ -98,7 +96,6 @@ const Products = () => {
                 "Ambient sound mode",
             ],
             preco: 120,
-            precoAntigo: 140
         },
         {
             id: 5,
@@ -112,7 +109,6 @@ const Products = () => {
                 "Ideal for mixing/mastering",
             ],
             preco: 300,
-            precoAntigo: 380
         },
         {
             id: 6,
@@ -126,7 +122,6 @@ const Products = () => {
                 "Fun colors & designs",
             ],
             preco: 80,
-            precoAntigo: 100
         },
     ];
     
@@ -221,9 +216,7 @@ const Products = () => {
                                         <p className="text-orange-400 text-lg font-medium tracking-wide">
                                             ${product.preco}
                                             {/* Preço Antigo (se existir) */}
-                                            {product.precoAntigo && (
-                                                <span className="text-gray-500 text-sm line-through ml-2">${product.precoAntigo}</span>
-                                            )}
+                                           
                                         </p>
                                         
                                         {/* Container dos botões de ação do card */}
