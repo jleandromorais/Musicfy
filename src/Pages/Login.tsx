@@ -35,7 +35,7 @@ const AuthPage = () => {
             try {
                 const result = await getRedirectResult(auth);
                 if (result?.user) {
-                    navigate('/dashboard');
+                    navigate('/home'); // Redireciona para a página inicial após o login
                 }
             } catch (error) {
                 console.error("Redirect error:", error);
@@ -60,7 +60,7 @@ const AuthPage = () => {
             try {
                 const result = await signInWithPopup(auth, provider);
                 console.log('User signed in:', result.user);
-                navigate('/dashboard');
+                navigate('/home'); // Redireciona para a página inicial após o login
             } catch (popupError) {
                 if ((popupError as FirebaseError).code === 'auth/popup-blocked') {
                     console.log('Popup blocked, trying redirect...');
@@ -96,7 +96,7 @@ const AuthPage = () => {
             if (isLoginView) {
                 // Lógica de Login
                 await signInWithEmailAndPassword(auth, email, password);
-                navigate('/dashboard');
+                navigate('/home');
             } else {
                 // Lógica de Cadastro
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -108,17 +108,20 @@ const AuthPage = () => {
                     });
                 }
                 
-                navigate('/dashboard');
+                navigate('/home');
             }
         } catch (error) {
             const err = error as FirebaseError;
             // Mapeia códigos de erro comuns para mensagens amigáveis
             switch (err.code) {
-                case 'auth/user-not-found':
-                    setError("Nenhum usuário encontrado com este e-mail.");
+                case 'auth/user-not-found':// <-- 1. Verifica se o usuário existe
+                    setError("Nenhum usuário encontrado com este e-mail.");// <-- 2. Mensagem amigável
                     break;
-                case 'auth/wrong-password':
+                case 'auth/wrong-password':// <-- 3. Verifica se a senha está correta
                     setError("Senha incorreta. Por favor, tente novamente.");
+                    break;
+                     case 'auth/invalid-credential': // <--- NOVA CORREÇÃO: CAPTURA O NOVO CÓDIGO DE ERRO DO FIREBASE
+                    setError("Credenciais inválidas. Verifique seu e-mail e senha.");
                     break;
                 case 'auth/email-already-in-use':
                     setError("Este e-mail já está em uso por outra conta.");

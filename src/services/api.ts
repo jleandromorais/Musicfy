@@ -12,7 +12,7 @@ export interface Product{
 export const fetchProducts = async (): Promise<Product[]> => {
     try {
         // Faz uma requisição HTTP para a API de produtos
-       const response = await fetch('https://fakestoreapi.com/products/category/electronics');
+       const response = await fetch('http://localhost:3000/api/products');
         
         // Verifica se a resposta foi bem-sucedida (status HTTP 200-299)
         if (!response.ok){
