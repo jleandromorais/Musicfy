@@ -1,17 +1,17 @@
-export async function adicionarAoCarrinho(id: number) {
-  const response = await fetch(`http://localhost:8080/cart?id=${id}`, {
-    method: 'POST'
-  });
-  if (!response.ok) throw new Error('Erro ao adicionar');
-  const itens = await response.json();
-  return itens;
-}
+export async function adicionarAoCarrinho(item: { productId: number; quantity: number }) {
+  const API_URL = 'http://localhost:8080/carrinho/adicionar'; // Endpoint simplificado
 
-export async function removerDoCarrinho(id: number) {
-  const response = await fetch(`http://localhost:8080/cart/delete?id=${id}`, {
-    method: 'DELETE'
+  const response = await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(item) // Envia exatamente {productId, quantity}
   });
-  if (!response.ok) throw new Error('Erro ao remover');
-  const itens = await response.json();
-  return itens;
+
+  if (!response.ok) {
+    throw new Error('Falha ao adicionar item');
+  }
+
+  return await response.json();
 }

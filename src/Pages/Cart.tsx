@@ -1,5 +1,4 @@
 import React from 'react';
-import { adicionarAoCarrinho, removerDoCarrinho } from '../services/cartApi';
 import { useCart, type CartItem } from '../contexts/CartContext'; // Ajuste o caminho conforme necessário
 import { FaTrash, FaShoppingBag } from 'react-icons/fa';
 

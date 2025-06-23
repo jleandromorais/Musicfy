@@ -35,7 +35,7 @@ const AuthPage = () => {
             try {
                 const result = await getRedirectResult(auth);
                 if (result?.user) {
-                    navigate('/home'); // Redireciona para a página inicial após o login
+                    navigate('/'); // Redireciona para a página inicial após o login
                 }
             } catch (error) {
                 console.error("Redirect error:", error);
@@ -60,7 +60,7 @@ const AuthPage = () => {
             try {
                 const result = await signInWithPopup(auth, provider);
                 console.log('User signed in:', result.user);
-                navigate('/home'); // Redireciona para a página inicial após o login
+                navigate('/'); // Redireciona para a página inicial após o login
             } catch (popupError) {
                 if ((popupError as FirebaseError).code === 'auth/popup-blocked') {
                     console.log('Popup blocked, trying redirect...');
@@ -96,7 +96,7 @@ const AuthPage = () => {
             if (isLoginView) {
                 // Lógica de Login
                 await signInWithEmailAndPassword(auth, email, password);
-                navigate('/home');
+                navigate('/');
             } else {
                 // Lógica de Cadastro
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -108,7 +108,7 @@ const AuthPage = () => {
                     });
                 }
                 
-                navigate('/home');
+                navigate('/');
             }
         } catch (error) {
             const err = error as FirebaseError;

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 // Importa a função para buscar produtos e o TIPO Product da API simulada
 // A interface Product será USADA AQUI, mas DEFINIDA e EXPORTADA em '../services/api'
-import { fetchProducts, type Product } from '../services/api'; // <--- MANTENHA SÓ ESTA IMPORTAÇÃO
 
 // REMOVA DAQUI: export interface Product { ... }
 // A interface Product não deve ser definida neste arquivo.
