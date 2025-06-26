@@ -19,8 +19,7 @@ interface Product {
 }
 
 interface CartItem {
-  id: number;
-  productId: number;
+  productId: number;  // Apenas isso é necessário
   name: string;
   price: number;
   img: string;
@@ -32,48 +31,38 @@ const Products = () => {
   const { addToCart } = useCart();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
- const handleToCart = async (product: Product) => {
-  if (!product?.id) {
-    toast.error("Produto inválido");
-    return;
-  }
-
+const handleToCart = async (product: Product) => {
   try {
     await adicionarAoCarrinho({
       productId: product.id,
       quantity: 1
     });
 
-    addToCart({
-      id: product.id,
-      productId: product.id,
-      name: product.name,
-      price: product.preco,
-      img: product.img,
-      quantity: 1
-    });
-
+   addToCart({
+  id: product.id,            // Adicione este campo se CartItem espera 'id'
+  productId: product.id,     // Se o contexto do carrinho usa productId
+  name: product.name,
+  price: product.preco,
+  img: product.img,
+  quantity: 1
+});
     toast.success(`${product.name} adicionado ao carrinho!`);
-  } catch (error: any) {
-    console.error("Erro ao adicionar ao carrinho:", error);
-    toast.error(error.message || "Erro ao adicionar ao carrinho");
+  } catch (error) {
+    toast.error("Erro ao adicionar ao carrinho");
   }
 };
 
 
   const handleBuyNow = (product: Product) => {
-    const cartItem: CartItem = {
-      id: product.id,
-      productId: product.id,
-      name: product.name,
-      price: product.preco,
-      img: product.img,
-      quantity: 1
-    };
-
-    addToCart(cartItem);
-    navigate('/cart');
-  };
+  addToCart({
+    productId: product.id,
+    name: product.name,
+    price: product.preco,
+    img: product.img,
+    quantity: 1
+  });
+  navigate('/cart');
+};
 
   const products: Product[] = [
     {
