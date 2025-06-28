@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 // Importa a função para buscar produtos e o TIPO Product da API simulada
 // A interface Product será USADA AQUI, mas DEFINIDA e EXPORTADA em '../services/api'
-import { fetchProducts, type Product } from '../services/api'; // <--- MANTENHA SÓ ESTA IMPORTAÇÃO
 
 // REMOVA DAQUI: export interface Product { ... }
 // A interface Product não deve ser definida neste arquivo.
@@ -67,4 +66,22 @@ export const useProducts = () => {
         error: state.error,
         isEmpty: state.products.length === 0 && !state.loading, // Indica se está vazio (e não carregando)
     };
+    
+    
+async function adicionarAoCarrinho(id: number) {
+  const response = await fetch(`http://localhost:8080/cart?id=${id}`, {
+    method: 'POST'
+  });
+  if (!response.ok) throw new Error('Erro ao adicionar');
+  const itens = await response.json();
+  return itens; // lista atualizada do carrinho
+}
+async function removerDoCarrinho(id: number) {
+  const response = await fetch(`http://localhost:8080/cart/delete?id=${id}`, {
+    method: 'DELETE'
+  });
+  if (!response.ok) throw new Error('Erro ao remover');
+  const itens = await response.json();
+  return itens; // lista atualizada do carrinho
+}
 };
