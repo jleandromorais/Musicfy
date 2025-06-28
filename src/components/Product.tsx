@@ -12,28 +12,37 @@ const Products = () => {
     const {addToCart} = useCart(); // Hook para adicionar produtos ao carrinho, se necessário
     // Interface para a estrutura do produto
 
-   const handleToCart = (product: Product) => {
-  addToCart({
-    prductId :product.id,
-    name: product.name,
-    price: product.preco,
-    img: product.img,
-  });
-   console.log("Enviando para addToCart:")
-   console.log("Item productid enviado com valor:", product.id);
-  toast.success(`${product.name} adicionado ao carrinho!`);
-};
-
-
-     const handleBuyNow = (product: Product) => {
-    addToCart({
-      ProductId: product.id,
+   const handleToCart = async (product: Product) => {
+  try {
+    await addToCart({
+      id: product.id,  // Corrigido para 'id' e removido o typo
       name: product.name,
       price: product.preco,
       img: product.img,
     });
-    navigate('/cart'); // Redireciona para o carrinho
-  };
+    console.log("Enviando para addToCart:");
+    console.log("Item productid enviado com valor:", product.id);
+    toast.success(`${product.name} adicionado ao carrinho!`);
+  } catch (error) {
+    console.error("Erro ao adicionar ao carrinho:", error);
+    toast.error(`Falha ao adicionar ${product.name} ao carrinho.`);
+  }
+};
+
+const handleBuyNow = async (product: Product) => {
+  try {
+    await addToCart({
+      id: product.id,  // Corrigido para manter consistência
+      name: product.name,
+      price: product.preco,
+      img: product.img,
+    });
+    navigate('/cart');
+  } catch (error) {
+    console.error("Erro ao comprar agora:", error);
+    toast.error(`Falha ao adicionar ${product.name} ao carrinho.`);
+  }
+};
     interface Product {
       id: number; 
         img: string; // Caminho para a imagem do produto

@@ -39,4 +39,4 @@ export const decrementQuantity = async (cartId: number, productId: number) => {
   });
   if (!response.ok) throw new Error('Erro ao decrementar quantidade');
   return await response.json();
-};
+};AA
