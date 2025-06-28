@@ -9,7 +9,8 @@ import type { ReactNode } from 'react'; // Importa o tipo 'ReactNode' para tipar
   id: number;      // Identificador único do produto
   name: string;    // Nome do produto
   price: number;   // Preço do produto
-  img: string;     // URL ou caminho da imagem do produto
+  img: string;  
+  quantity:number;   // URL ou caminho da imagem do produto
 };
 
 // Tipo para um item no carrinho: é um Produto, mas com uma quantidade adicional

@@ -14,18 +14,20 @@ const Products = () => {
 
    const handleToCart = (product: Product) => {
   addToCart({
-    id: product.id,
+    prductId :product.id,
     name: product.name,
     price: product.preco,
     img: product.img,
   });
+   console.log("Enviando para addToCart:")
+   console.log("Item productid enviado com valor:", product.id);
   toast.success(`${product.name} adicionado ao carrinho!`);
 };
 
 
      const handleBuyNow = (product: Product) => {
     addToCart({
-      id: product.id,
+      ProductId: product.id,
       name: product.name,
       price: product.preco,
       img: product.img,
@@ -33,7 +35,7 @@ const Products = () => {
     navigate('/cart'); // Redireciona para o carrinho
   };
     interface Product {
-        id: number;
+      id: number; 
         img: string; // Caminho para a imagem do produto
         name: string;
         subTitle: string;

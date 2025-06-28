@@ -1,97 +1,181 @@
-import React from 'react';
-import { useCart, type CartItem } from '../contexts/CartContext'; // Ajuste o caminho conforme necessário
-import { FaTrash, FaShoppingBag } from 'react-icons/fa';
+import React, { createContext, useState, useContext, useCallback, useMemo, useEffect } from 'react';
+import type { ReactNode } from 'react';
+import { toast } from 'react-toastify';
+import {
+  fetchCart,
+  addCartItem,
+  removeCartItem,
+  incrementQuantity,
+  decrementQuantity
+} from '../services/api'; // Ajuste o caminho conforme necessário
 
-const Cart = () => {
-  const { cartItems, removeFromCart, clearCart, cartCount, totalPrice ,changeCartItemQuantity } = useCart();
-
-   // Função para lidar com mudança de quantidade
-  const handleQuantityChange = (item: CartItem , newQuantity:number) => {
-    if (newQuantity >= 1) { // Garante que a quantidade seja pelo menos 1
-      changeCartItemQuantity(item, newQuantity);
-    }
-  };
-  return (
-   <div className="bg-[#1A002F] text-white min-h-screen p-4 sm:p-6 lg:p-8 relative overflow-hidden">
-  {/* Círculos de fundo com z-index baixo */}
-  <div className="absolute top-1/2 left-1/2 w-[1000px] h-[1000px] rounded-full bg-[#35589A] opacity-15 filter blur-3xl transform -translate-x-1/2 -translate-y-1/2 z-0"></div>
- 
-
-  {/* Conteúdo do carrinho com z-index maior */}
-  <div className="relative z-10 max-w-4xl mx-auto">
-    <h1 className="text-3xl sm:text-4xl font-bold text-orange-500 mb-6 sm:mb-8 flex items-center gap-4">
-      <FaShoppingBag /> Seu Carrinho ({cartCount})
-    </h1>
-
-    {cartItems.length === 0 ? (
-      <div className="text-center py-16 px-6 bg-gray-800 rounded-lg">
-        <p className="text-xl text-gray-400">Seu carrinho está vazio.</p>
-      </div>
-    ) : (
-      <div className="bg-gray-800 rounded-lg shadow-xl p-6">
-       <div className="space-y-4">
-  {cartItems.map((item) => (
-    <div key={item.id} className="flex items-center justify-between border-b border-gray-700 pb-4">
-      <div className="flex items-center gap-4">
-        <img src={item.img} alt={item.name} className="w-20 h-20 object-cover rounded-md" />
-        <div>
-          <h2 className="text-lg font-bold">{item.name}</h2>
-          <p className="text-orange-400 font-semibold">R$ {item.price.toFixed(2)}</p>
-          <div className="flex items-center mt-1 gap-2">
-            <button
-              onClick={() => handleQuantityChange(item, item.quantity - 1)}
-              className="text-gray-300 hover:text-orange-500 transition-colors p-1"
-              disabled={item.quantity <= 1}
-            >
-              -
-            </button>
-            <span className="text-sm text-gray-400 w-6 text-center">{item.quantity}</span>
-            <button
-              onClick={() => handleQuantityChange(item, item.quantity + 1)}
-              className="text-gray-300 hover:text-orange-500 transition-colors p-1"
-            >
-              +
-            </button>
-          </div>
-        </div>
-      </div>
-      <div className="flex items-center gap-2">
-        <p className="text-orange-400 font-semibold">
-          R$ {(item.price * item.quantity).toFixed(2)}
-        </p>
-        <button 
-          onClick={() => removeFromCart(item.id)} 
-          className="text-red-500 hover:text-red-400 transition-colors"
-        >
-          <FaTrash size={18} />
-        </button>
-      </div>
-    </div>
-  ))}
-</div>
-
-        <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <h3 className="text-2xl font-bold">
-            Total: <span className="text-orange-500">R$ {totalPrice.toFixed(2)}</span>
-          </h3>
-          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-            <button
-              onClick={clearCart}
-              className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded-lg transition-colors w-full sm:w-auto"
-            >
-              Limpar Carrinho
-            </button>
-            <button className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-6 rounded-lg transition-colors w-full sm:w-auto">
-              Finalizar Compra
-            </button>
-          </div>
-        </div>
-      </div>
-    )}
-  </div>
-</div>
-
-  );
+// Tipagens (mantenha as mesmas)
+export type Product = {
+  id: number;
+  name: string;
+  price: number;
+  img: string;
 };
 
-export default Cart;
+export type CartItem = Product & {
+  quantity: number;
+};
+
+export type CartContextType = {
+  cartItems: CartItem[];
+  addToCart: (product: Product) => Promise<void>;
+  removeFromCart: (productId: number) => Promise<void>;
+  updateQuantity: (productId: number, newQuantity: number) => Promise<void>;
+  clearCart: () => Promise<void>;
+  cartCount: number;
+  totalPrice: number;
+  isInCart: (productId: number) => boolean;
+  changeCartItemQuantity: (product: Product, newQuantity: number) => Promise<void>;
+  isLoading: boolean;
+  error: string | null;
+};
+
+const CartContext = createContext<CartContextType | undefined>(undefined);
+
+export const CartProvider = ({ children }: { children: ReactNode }) => {
+  const [cartId] = useState<number>(1); // ID fixo para exemplo (em produção, gere dinamicamente)
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Carrega o carrinho ao iniciar
+  useEffect(() => {
+    const loadCart = async () => {
+      try {
+        setIsLoading(true);
+        const cartData = await fetchCart(cartId);
+        setCartItems(cartData.items || []);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Erro desconhecido');
+        console.error("Erro ao carregar carrinho:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadCart();
+  }, [cartId]);
+
+  const addToCart = useCallback(async (product: Product) => {
+    try {
+      setIsLoading(true);
+      await addCartItem(cartId, product.id, 1);
+      
+      setCartItems(prevItems => {
+        const existingItem = prevItems.find(item => item.id === product.id);
+        return existingItem
+          ? prevItems.map(item =>
+              item.id === product.id
+                ? { ...item, quantity: item.quantity + 1 }
+                : item
+            )
+          : [...prevItems, { ...product, quantity: 1 }];
+      });
+      
+      toast.success(`${product.name} adicionado ao carrinho!`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro desconhecido');
+      toast.error(`Falha ao adicionar ${product.name}`);
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [cartId]);
+
+  const removeFromCart = useCallback(async (productId: number) => {
+    try {
+      setIsLoading(true);
+      await removeCartItem(cartId, productId);
+      
+      setCartItems(prevItems => prevItems.filter(item => item.id !== productId));
+      toast.success('Item removido do carrinho!');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro desconhecido');
+      toast.error('Falha ao remover item');
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [cartId]);
+
+  const changeCartItemQuantity = useCallback(async (product: Product, newQuantity: number) => {
+    try {
+      setIsLoading(true);
+      
+      if (newQuantity <= 0) {
+        await removeFromCart(product.id);
+        return;
+      }
+
+      // Determina se precisa incrementar ou decrementar
+      const currentItem = cartItems.find(item => item.id === product.id);
+      if (!currentItem) {
+        await addCartItem(cartId, product.id, newQuantity);
+      } else if (newQuantity > currentItem.quantity) {
+        await incrementQuantity(cartId, product.id);
+      } else {
+        await decrementQuantity(cartId, product.id);
+      }
+
+      setCartItems(prevItems =>
+        prevItems
+          .map(item =>
+            item.id === product.id ? { ...item, quantity: newQuantity } : item
+          )
+          .filter(item => item.quantity > 0)
+      );
+      
+      toast.success('Quantidade atualizada!');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro desconhecido');
+      toast.error('Falha ao atualizar quantidade');
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [cartId, cartItems, removeFromCart]);
+
+  // Outras funções (clearCart, etc) seguindo o mesmo padrão
+
+  const value = {
+    cartItems,
+    addToCart,
+    removeFromCart,
+    updateQuantity: changeCartItemQuantity,
+    clearCart: async () => {
+      try {
+        setIsLoading(true);
+        // Implemente a limpeza no backend se necessário
+        setCartItems([]);
+        toast.success('Carrinho limpo!');
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Erro desconhecido');
+        toast.error('Falha ao limpar carrinho');
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    cartCount: useMemo(() => cartItems.reduce((count, item) => count + item.quantity, 0), [cartItems]),
+    totalPrice: useMemo(() => cartItems.reduce((total, item) => total + item.price * item.quantity, 0), [cartItems]),
+    isInCart: useCallback((productId: number) => 
+      cartItems.some(item => item.id === productId), [cartItems]),
+    changeCartItemQuantity,
+    isLoading,
+    error
+  };
+
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+};
+
+export const useCart = () => {
+  const context = useContext(CartContext);
+  if (!context) {
+    throw new Error('useCart must be used within a CartProvider');
+  }
+  return context;
+};
