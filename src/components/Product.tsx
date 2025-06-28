@@ -7,7 +7,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import fhone from '../assets/imagens/photo.png'; 
 import ruido from '../assets/imagens/ruido.png';
 import headset from '../assets/imagens/gamer.png';
-import { adicionarAoCarrinho } from '../services/cartApi';
+import { criarCarrinhoComItem, adicionarItemAoCarrinho } from '../services/cartApi';
 
 interface Product {
   id: number;
@@ -33,35 +33,38 @@ const Products = () => {
 
 const handleToCart = async (product: Product) => {
   try {
-    await adicionarAoCarrinho({
+    let cartId = localStorage.getItem("cartId");
+
+    if (cartId) {
+      // ✅ Adiciona no backend
+      await adicionarItemAoCarrinho(cartId, {
+        productId: product.id,
+        quantity: 1
+      });
+    } else {
+      // ✅ Cria no backend
+      const response = await criarCarrinhoComItem({
+        productId: product.id,
+        quantity: 1
+      });
+
+      cartId = response.cartId || response.cart?.id;
+      if (cartId) localStorage.setItem("cartId", cartId.toString());
+    }
+
+    // ✅ Atualiza o estado local
+    addToCart({
       productId: product.id,
+      name: product.name,
+      price: product.preco,
+      img: product.img,
       quantity: 1
     });
 
-   addToCart({
-  id: product.id,            // Adicione este campo se CartItem espera 'id'
-  productId: product.id,     // Se o contexto do carrinho usa productId
-  name: product.name,
-  price: product.preco,
-  img: product.img,
-  quantity: 1
-});
     toast.success(`${product.name} adicionado ao carrinho!`);
   } catch (error) {
     toast.error("Erro ao adicionar ao carrinho");
   }
-};
-
-
-  const handleBuyNow = (product: Product) => {
-  addToCart({
-    productId: product.id,
-    name: product.name,
-    price: product.preco,
-    img: product.img,
-    quantity: 1
-  });
-  navigate('/cart');
 };
 
   const products: Product[] = [

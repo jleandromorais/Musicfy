@@ -1,31 +1,41 @@
-const API_BASE_URL = "http://localhost:8080/api/carrinho";
+const BASE_URL = "http://localhost:8080/api/carrinho";
 
-
-export const adicionarAoCarrinho = async (cartId: number, productId: number, quantity: number) => {
-  const response = await fetch(`${API_BASE_URL}/${cartId}/adicionar`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ productId, quantity })
+export const criarCarrinhoComItem = async ({ productId, quantity }: { productId: number; quantity: number }) => {
+  const response = await fetch(`${BASE_URL}/criar`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ productId, quantity }),
   });
-  if (!response.ok) throw new Error('Erro ao adicionar item');
-  return await response.json();
+
+  if (!response.ok) throw new Error("Erro ao criar carrinho");
+
+  return response.json(); // certifique-se que o backend está retornando { cartId: 1 } ou similar
 };
 
-export async function DeletarItem(productId: number) {
-  const API_URL = `http://localhost:8080/carrinho/RemoverPorProduto/${productId}`;
+export const adicionarItemAoCarrinho = async (cartId: string, { productId, quantity }: { productId: number; quantity: number }) => {
+  const response = await fetch(`${BASE_URL}/${cartId}/adicionar`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ productId, quantity }),
+  });
 
-  const response = await fetch(API_URL, {
-    method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-      // Adicione outros headers se necessário (como Authorization)
-    },
+  if (!response.ok) throw new Error("Erro ao adicionar item ao carrinho");
+
+  return response.json(); // opcional
+};
+
+export const DeletarItem = async (cartId: string, productId: number) => {
+  const response = await fetch(`http://localhost:8080/api/carrinho/${cartId}/remover/${productId}`, {
+    method: "DELETE",
   });
 
   if (!response.ok) {
-    const errorData = await response.text();
-    throw new Error(errorData || 'Falha ao deletar item');
+    // Aqui lança o erro, você pode logar response.status e response.statusText para mais detalhes
+    const errorText = await response.text();
+    console.error('Erro no DELETE:', response.status, response.statusText, errorText);
+    throw new Error("Erro ao deletar item do carrinho");
   }
 
-  return await response.text(); // Ou response.json() se o backend retornar JSON
-}
+  return response.text();
+};
+

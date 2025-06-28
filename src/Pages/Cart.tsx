@@ -17,10 +17,8 @@ const Cart = () => {
 
   return (
     <div className="bg-[#1A002F] text-white min-h-screen p-4 sm:p-6 lg:p-8 relative overflow-hidden">
-      {/* Círculos de fundo com z-index baixo */}
       <div className="absolute top-1/2 left-1/2 w-[1000px] h-[1000px] rounded-full bg-[#35589A] opacity-15 filter blur-3xl transform -translate-x-1/2 -translate-y-1/2 z-0"></div>
 
-      {/* Conteúdo do carrinho com z-index maior */}
       <div className="relative z-10 max-w-4xl mx-auto">
         <h1 className="text-3xl sm:text-4xl font-bold text-orange-500 mb-6 sm:mb-8 flex items-center gap-4">
           <FaShoppingBag /> Seu Carrinho ({cartCount})
@@ -62,21 +60,35 @@ const Cart = () => {
                     <p className="text-orange-400 font-semibold">
                       R$ {(item.price * item.quantity).toFixed(2)}
                     </p>
-                  <button
-  onClick={async () => {
-    try {
-      await DeletarItem(item.productId);
-      removeFromCart(item.productId);
-      toast.success('Item removido do carrinho');
-    } catch (error) {
-      console.error(`Erro ao remover o item de id: ${item.productId}`, error);
-      toast.error(`Erro ao remover o item (id: ${item.productId})`);
-    }
-  }}
-  className="text-red-500 hover:text-red-400 transition-colors"
->
-  <FaTrash size={18} />
-</button>
+
+                    {/* Botão Remover */}
+                    <button
+                      onClick={async () => {
+                        const cartId = localStorage.getItem("cartId");
+
+                        if (!cartId) {
+                          toast.error("Carrinho não encontrado");
+                          return;
+                        }
+
+                        try {
+                          await DeletarItem(cartId, item.productId);
+                          removeFromCart(item.productId);
+                          toast.success("Item removido do carrinho");
+                        } catch (error: any) {
+                          console.error(`Erro ao remover o item de id: ${item.productId}`, error);
+                          if (error.message) {
+                            toast.error(error.message);
+                          } else {
+                            toast.error("Erro desconhecido ao remover o item");
+                          }
+                        }
+                      }}
+                      className="text-red-500 hover:text-red-400 transition-colors"
+                      aria-label="Remover item do carrinho"
+                    >
+                      <FaTrash size={18} />
+                    </button>
                   </div>
                 </div>
               ))}
@@ -101,6 +113,7 @@ const Cart = () => {
           </div>
         )}
       </div>
+
       <ToastContainer position="bottom-right" />
     </div>
   );
