@@ -54,7 +54,7 @@ const handleToCart = async (product: Product) => {
 
     // ✅ Atualiza o estado local
     addToCart({
-      productId: product.id,
+      id : product.id,
       name: product.name,
       price: product.preco,
       img: product.img,
