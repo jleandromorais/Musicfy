@@ -1,17 +1,40 @@
 import React from 'react';
 import { useCart, type CartItem } from '../contexts/CartContext';
 import { FaTrash, FaShoppingBag } from 'react-icons/fa';
-import { DeletarItem } from '../services/cartApi';
+import { DeletarItem,incrementarQuantidade,decrementarQuantidade,fetchCartData } from '../services/cartApi';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const Cart = () => {
   const { cartItems, removeFromCart, clearCart, cartCount, totalPrice, changeCartItemQuantity } = useCart();
+const cartId = localStorage.getItem("cartId");
+
+    if (!cartId) {
+    toast.error("Carrinho não encontrado");
+    return null;
+  }
 
   // Função para lidar com mudança de quantidade
-  const handleQuantityChange = (item: CartItem, newQuantity: number) => {
-    if (newQuantity >= 1) {
+  const handleQuantityChange = async (item: CartItem, newQuantity: number) => {
+    if (newQuantity < 1) return;
+
+    try {
+      if (newQuantity > item.quantity) {
+        await incrementarQuantidade(cartId, item.productId);
+      } else if (newQuantity  < item.quantity && item.quantity  >= 1){
+        await decrementarQuantidade(cartId, item.productId);
+      } 
+      
+      
       changeCartItemQuantity(item, newQuantity);
+      toast.success(`Quantidade atualizada para ${newQuantity}`); 
+    } catch (error) {
+    console.log("item:", item);
+console.log("productId direto:", item.productId);
+console.log("product.id:", item.product?.id);
+
+      console.error("Error updating quantity:", error);
+      toast.error("Erro ao atualizar quantidade");
     }
   };
 
