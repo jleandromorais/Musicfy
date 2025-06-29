@@ -38,4 +38,22 @@ export const DeletarItem = async (cartId: string, productId: number) => {
 
   return response.text();
 };
+export const incrementarQuantidade = async (cartId: string, productId: number) => {
+  const response = await fetch(`${BASE_URL}/${cartId}/incrementar/${productId}`, {
+    method: "PATCH",
+  });
+  if (!response.ok) throw new Error("Erro ao incrementar quantidade");
+};
 
+export const decrementarQuantidade = async (cartId: string, productId: number) => {
+  const response = await fetch(`${BASE_URL}/${cartId}/decrementar/${productId}`, {
+    method: "PATCH",
+  });
+  if (!response.ok) throw new Error("Erro ao decrementar quantidade");
+};
+
+export const fetchCartData = async (cartId: string) => {
+  const response = await fetch(`${BASE_URL}/${cartId}`);
+  if (!response.ok) throw new Error("Erro ao buscar carrinho");
+  return response.json();
+};
