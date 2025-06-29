@@ -52,8 +52,12 @@ export const decrementarQuantidade = async (cartId: string, productId: number) =
   if (!response.ok) throw new Error("Erro ao decrementar quantidade");
 };
 
-export const fetchCartData = async (cartId: string) => {
-  const response = await fetch(`${BASE_URL}/${cartId}`);
-  if (!response.ok) throw new Error("Erro ao buscar carrinho");
-  return response.json();
+
+
+export const LimparCarrinho = async (cartId: number) => {
+  const response = await fetch(`${BASE_URL}/${cartId}/limpar`, {
+    method: 'DELETE'
+  });
+  if (!response.ok) throw new Error('Erro ao limpar carrinho');
+  return await response.json();
 };

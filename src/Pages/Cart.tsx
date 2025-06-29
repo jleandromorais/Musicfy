@@ -1,12 +1,12 @@
 import React from 'react';
 import { useCart, type CartItem } from '../contexts/CartContext';
 import { FaTrash, FaShoppingBag } from 'react-icons/fa';
-import { DeletarItem,incrementarQuantidade,decrementarQuantidade,fetchCartData } from '../services/cartApi';
+import { DeletarItem,incrementarQuantidade,decrementarQuantidade,LimparCarrinho} from '../services/cartApi';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const Cart = () => {
-  const { cartItems, removeFromCart, clearCart, cartCount, totalPrice, changeCartItemQuantity } = useCart();
+ const { cartItems, removeFromCart, clearCart, cartCount, totalPrice, changeCartItemQuantity } = useCart();
 const cartId = localStorage.getItem("cartId");
 
     if (!cartId) {
@@ -15,28 +15,29 @@ const cartId = localStorage.getItem("cartId");
   }
 
   // Função para lidar com mudança de quantidade
-  const handleQuantityChange = async (item: CartItem, newQuantity: number) => {
-    if (newQuantity < 1) return;
+ const handleQuantityChange = async (item: CartItem, newQuantity: number) => {
+  if (newQuantity < 1) return; // não permite zero ou negativo
 
-    try {
-      if (newQuantity > item.quantity) {
-        await incrementarQuantidade(cartId, item.productId);
-      } else if (newQuantity  < item.quantity && item.quantity  >= 1){
-        await decrementarQuantidade(cartId, item.productId);
-      } 
-      
-      
-      changeCartItemQuantity(item, newQuantity);
-      toast.success(`Quantidade atualizada para ${newQuantity}`); 
-    } catch (error) {
-    console.log("item:", item);
-console.log("productId direto:", item.productId);
-console.log("product.id:", item.product?.id);
-
-      console.error("Error updating quantity:", error);
-      toast.error("Erro ao atualizar quantidade");
+  try {
+    if (newQuantity > item.quantity) {
+      await incrementarQuantidade(cartId, item.productId);
+    } else if (newQuantity < item.quantity) {
+      await decrementarQuantidade(cartId, item.productId);
     }
-  };
+
+    changeCartItemQuantity({
+      id: item.productId,
+      name: item.name,
+      price: item.price,
+      img: item.img,
+    }, newQuantity);
+
+    toast.success(`Quantidade atualizada para ${newQuantity}`);
+  } catch (error) {
+    toast.error("Erro ao atualizar quantidade");
+    console.error(error);
+  }
+};
 
   return (
     <div className="bg-[#1A002F] text-white min-h-screen p-4 sm:p-6 lg:p-8 relative overflow-hidden">
@@ -122,12 +123,30 @@ console.log("product.id:", item.product?.id);
                 Total: <span className="text-orange-500">R$ {totalPrice.toFixed(2)}</span>
               </h3>
               <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-                <button
-                  onClick={clearCart}
-                  className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded-lg transition-colors w-full sm:w-auto"
-                >
-                  Limpar Carrinho
-                </button>
+               <button
+  onClick={async () => {
+    try {
+      if (!cartId) {
+        toast.error("Carrinho não encontrado");
+        return;
+      }
+      
+      // Clear server cart
+      await LimparCarrinho(cartId);
+      
+      // Clear local cart
+      clearCart();
+      
+      toast.success("Carrinho limpo com sucesso");
+    } catch (error) {
+      console.error("Erro ao limpar carrinho:", error);
+      toast.error(error instanceof Error ? error.message : "Erro ao limpar carrinho");
+    }
+  }}
+  className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded-lg transition-colors w-full sm:w-auto"
+>
+  Limpar Carrinho
+</button>
                 <button className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-6 rounded-lg transition-colors w-full sm:w-auto">
                   Finalizar Compra
                 </button>

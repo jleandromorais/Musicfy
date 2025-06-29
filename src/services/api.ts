@@ -39,4 +39,12 @@ export const decrementQuantity = async (cartId: number, productId: number) => {
   });
   if (!response.ok) throw new Error('Erro ao decrementar quantidade');
   return await response.json();
-};AA
+};
+
+export const clearCart = async (cartId: number) => {
+  const response = await fetch(`${API_BASE_URL}/${cartId}/limpar`, {
+    method: 'DELETE'
+  });
+  if (!response.ok) throw new Error('Erro ao limpar carrinho');
+  return await response.json();
+};

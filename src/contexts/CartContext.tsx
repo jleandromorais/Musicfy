@@ -117,27 +117,26 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const changeCartItemQuantity = useCallback((product: Product, newQuantity: number) => {
       setCartItems(prevItems => {
-        // ✅ CORREÇÃO: Usa `product.id` para todas as operações
-        const existingItem = prevItems.find(item => item.productId === product.id);
-        if (existingItem) {
-          return prevItems
-            .map(item =>
-              item.productId === product.id
-                ? { ...item, quantity: newQuantity }
-                : item
-            )
-            .filter(item => item.quantity > 0); // Remove se a quantidade for 0
+        const exitemItm = prevItems.find(item=>item.productId === product.id);
+        if(exitemItm){
+          return prevItems.map(item => // ✅ CORREÇÃO: Usa `product.id` para encontrar o item a ser atualizado
+            item.productId ===product.id // ✅ CORREÇÃO: Usa `product.id` para encontrar o item a ser atualizado
+            ?{...item,quantity:newQuantity}//
+            :item
+          )
+          .filter(item => item.quantity > 0);// ✅ CORREÇÃO: Remove itens com quantidade zero
         }
-        // Se não existir (cenário menos comum para esta função), adiciona
-        return [...prevItems, {
-            productId: product.id,
-            name: product.name,
-            price: product.price,
-            img: product.img,
-            quantity: newQuantity
+        return [...prevItems,{// ✅ CORREÇÃO: Mapeia corretamente `product.id` para `productId`
+          productId: product.id,
+          name: product.name,
+          price: product.price,
+          img: product.img,
+          quantity: newQuantity
         }];
-    });
-  }, []);
+      });
+    }, []);
+    //--Carrinho limpo 
+   
 
   // --- VALORES MEMORIZADOS ---
   
