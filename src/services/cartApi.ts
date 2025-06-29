@@ -36,8 +36,11 @@ export const DeletarItem = async (cartId: string, productId: number) => {
     throw new Error("Erro ao deletar item do carrinho");
   }
 
-  return response.text();
+  // Handle cases where the response might be empty
+  const responseText = await response.text();
+  return responseText ? JSON.parse(responseText) : {};
 };
+
 export const incrementarQuantidade = async (cartId: string, productId: number) => {
   const response = await fetch(`${BASE_URL}/${cartId}/incrementar/${productId}`, {
     method: "PATCH",
@@ -52,12 +55,22 @@ export const decrementarQuantidade = async (cartId: string, productId: number) =
   if (!response.ok) throw new Error("Erro ao decrementar quantidade");
 };
 
-
-
+/**
+ * CORRECTED FUNCTION
+ * This function sends a request to clear the cart and handles the empty response correctly.
+ * @param cartId The ID of the cart to clear.
+ */
 export const LimparCarrinho = async (cartId: number) => {
   const response = await fetch(`${BASE_URL}/${cartId}/limpar`, {
     method: 'DELETE'
   });
-  if (!response.ok) throw new Error('Erro ao limpar carrinho');
-  return await response.json();
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    console.error("Failed to clear cart:", errorBody);
+    throw new Error('Erro ao limpar carrinho');
+  }
+
+  // The line "return await response.json()" has been removed.
+  // No return is necessary because the server's response is empty.
 };
