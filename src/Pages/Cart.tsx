@@ -4,8 +4,10 @@ import { FaTrash, FaShoppingBag } from 'react-icons/fa';
 import { DeletarItem,incrementarQuantidade,decrementarQuantidade,LimparCarrinho} from '../services/cartApi';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
+import { useNavigate } from 'react-router-dom';
+import { criarCarrinhoComItem, adicionarItemAoCarrinho } from '../services/cartApi';
 const Cart = () => {
+    const navigate = useNavigate();
  const { cartItems, removeFromCart, clearCart, cartCount, totalPrice, changeCartItemQuantity } = useCart();
 const cartId = localStorage.getItem("cartId");
 
@@ -147,7 +149,8 @@ const cartId = localStorage.getItem("cartId");
 >
   Limpar Carrinho
 </button>
-                <button className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-6 rounded-lg transition-colors w-full sm:w-auto">
+                <button
+                 onClick={() => navigate('/delivery')} className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-6 rounded-lg transition-colors w-full sm:w-auto">
                   Finalizar Compra
                 </button>
               </div>
