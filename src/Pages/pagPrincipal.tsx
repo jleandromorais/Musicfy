@@ -1,6 +1,9 @@
 import Navbar from "../components/NavbarE";
 import HeroSection from "../components/Hero";
 import Products from "../components/Product";
+import Banner from "../components/BannerPOrganização";
+import Fone from "../components/ProdutoFone";
+import Acessorios from "../components/Acessorios";
 
 const PagP = () => {
     return (
@@ -10,6 +13,10 @@ const PagP = () => {
             <HeroSection />
             {/* Outros componentes podem ser adicionados aqui */}
             <Products/>
+            <Banner />
+            {/* Adicionando o componente de produto específico */}
+            <Fone />
+            <Acessorios />
         </div>
     );
 }

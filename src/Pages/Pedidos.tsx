@@ -3,18 +3,18 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { FaArrowLeft, FaBoxOpen, FaShoppingBag, FaCalendarAlt } from 'react-icons/fa'; // 1. Importar ícone de calendário
+import { FaArrowLeft, FaBoxOpen, FaShoppingBag, FaCalendarAlt } from 'react-icons/fa';
 import DeliveryStatus from '../components/DeliveryStatus';
-import { calculateEstimatedDelivery } from '../services/dateService'; // 2. Importar a nova função
+import { calculateEstimatedDelivery } from '../services/dateService';
 
-// Atualizar o tipo para incluir os dados necessários
+// O tipo do pedido permanece o mesmo
 type Order = {
   id: string;
   date: string;
   totalPrice: number;
-  shipping: { 
+  shipping: {
     name?: string;
-    estimatedTime?: string; // Adicionar este campo
+    estimatedTime?: string;
   };
   items: Array<{
     name: string;
@@ -38,18 +38,30 @@ const OrdersPage: React.FC = () => {
       navigate('/login');
       return;
     }
-    
+
     const storedOrdersString = localStorage.getItem('allOrders');
     if (storedOrdersString) {
       const allStoredOrders = JSON.parse(storedOrdersString);
       const userOrders = allStoredOrders.filter((order: any) => order.userId === currentUser?.uid);
 
-      const ordersWithStatus = userOrders.map((order: any, index: number) => {
+      // 1. Lógica para calcular o status dinamicamente
+      const ordersWithDynamicStatus = userOrders.map((order: any) => {
         const statuses = ['Pedido recebido', 'Em separação', 'Saiu para entrega', 'A caminho', 'Entregue'];
+        const orderDate = new Date(order.date);
+        const today = new Date();
+        
+        // Calcula a diferença de dias entre a data do pedido e hoje
+        const diffTime = Math.abs(today.getTime() - orderDate.getTime());
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+        // Define o status com base nos dias que passaram
+        // Garante que o índice não ultrapasse o tamanho da lista de status
+        const statusIndex = Math.min(diffDays, statuses.length - 1);
+        const currentStatus = statuses[statusIndex];
         
         return {
           ...order,
-          deliveryStatus: statuses[index % statuses.length], 
+          deliveryStatus: currentStatus, 
           deliveryPerson: {
             name: 'Carlos Estevão',
             avatar: `https://i.pravatar.cc/150?u=${order.id}`,
@@ -57,7 +69,7 @@ const OrdersPage: React.FC = () => {
         };
       });
       
-      setOrders(ordersWithStatus);
+      setOrders(ordersWithDynamicStatus);
     }
   }, [currentUser, authLoading, navigate]);
 
@@ -91,7 +103,6 @@ const OrdersPage: React.FC = () => {
         ) : (
           <div className="space-y-6">
             {orders.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((order) => {
-              // 3. Chamar a função para calcular a data
               const estimatedDelivery = order.shipping.estimatedTime 
                 ? calculateEstimatedDelivery(order.date, order.shipping.estimatedTime) 
                 : 'A ser definido';
@@ -122,7 +133,6 @@ const OrdersPage: React.FC = () => {
                       </div>
                   </div>
 
-                  {/* 4. Exibir a data de entrega estimada */}
                   <div className="flex items-center gap-2 text-green-400 text-sm mt-4 font-semibold">
                       <FaCalendarAlt />
                       <span>{estimatedDelivery}</span>
