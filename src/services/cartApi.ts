@@ -1,76 +1,96 @@
 const BASE_URL = "http://localhost:8080/api/carrinho";
 
-export const criarCarrinhoComItem = async ({ productId, quantity }: { productId: number; quantity: number }) => {
+// Helper function for consistent error handling
+const handleApiResponse = async (response: Response) => {
+  if (!response.ok) {
+    let errorDetails = '';
+    try {
+      const errorData = await response.json();
+      errorDetails = errorData.message || JSON.stringify(errorData);
+    } catch {
+      errorDetails = await response.text();
+    }
+    
+    console.error('API Error:', {
+      status: response.status,
+      statusText: response.statusText,
+      url: response.url,
+      details: errorDetails,
+    });
+    
+    throw new Error(errorDetails || `HTTP error! status: ${response.status}`);
+  }
+
+  try {
+    const text = await response.text();
+    return text ? JSON.parse(text) : {};
+  } catch {
+    return {};
+  }
+};
+
+export const criarCarrinhoComItem = async ({ 
+  productId, 
+  quantity 
+}: { 
+  productId: number; 
+  quantity: number 
+}) => {
   const response = await fetch(`${BASE_URL}/criar`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ productId, quantity }),
   });
 
-  if (!response.ok) throw new Error("Erro ao criar carrinho");
-
-  return response.json(); // certifique-se que o backend está retornando { cartId: 1 } ou similar
+  return handleApiResponse(response);
 };
 
-export const adicionarItemAoCarrinho = async (cartId: string, { productId, quantity }: { productId: number; quantity: number }) => {
+export const adicionarItemAoCarrinho = async (
+  cartId: string, 
+  { productId, quantity }: { productId: number; quantity: number }
+) => {
   const response = await fetch(`${BASE_URL}/${cartId}/adicionar`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ productId, quantity }),
   });
 
-  if (!response.ok) throw new Error("Erro ao adicionar item ao carrinho");
-
-  return response.json(); // opcional
+  return handleApiResponse(response);
 };
 
 export const DeletarItem = async (cartId: string, productId: number) => {
-  const response = await fetch(`http://localhost:8080/api/carrinho/${cartId}/remover/${productId}`, {
+  const response = await fetch(`${BASE_URL}/${cartId}/remover/${productId}`, {
     method: "DELETE",
+    headers: { "Accept": "application/json" },
   });
 
-  if (!response.ok) {
-    // Aqui lança o erro, você pode logar response.status e response.statusText para mais detalhes
-    const errorText = await response.text();
-    console.error('Erro no DELETE:', response.status, response.statusText, errorText);
-    throw new Error("Erro ao deletar item do carrinho");
-  }
-
-  // Handle cases where the response might be empty
-  const responseText = await response.text();
-  return responseText ? JSON.parse(responseText) : {};
+  return handleApiResponse(response);
 };
 
 export const incrementarQuantidade = async (cartId: string, productId: number) => {
   const response = await fetch(`${BASE_URL}/${cartId}/incrementar/${productId}`, {
     method: "PATCH",
+    headers: { "Accept": "application/json" },
   });
-  if (!response.ok) throw new Error("Erro ao incrementar quantidade");
+  
+  return handleApiResponse(response);
 };
 
 export const decrementarQuantidade = async (cartId: string, productId: number) => {
   const response = await fetch(`${BASE_URL}/${cartId}/decrementar/${productId}`, {
     method: "PATCH",
+    headers: { "Accept": "application/json" },
   });
-  if (!response.ok) throw new Error("Erro ao decrementar quantidade");
+  
+  return handleApiResponse(response);
 };
 
-/**
- * CORRECTED FUNCTION
- * This function sends a request to clear the cart and handles the empty response correctly.
- * @param cartId The ID of the cart to clear.
- */
 export const LimparCarrinho = async (cartId: number) => {
   const response = await fetch(`${BASE_URL}/${cartId}/limpar`, {
-    method: 'DELETE'
+    method: 'DELETE',
+    headers: { "Accept": "application/json" },
   });
 
-  if (!response.ok) {
-    const errorBody = await response.text();
-    console.error("Failed to clear cart:", errorBody);
-    throw new Error('Erro ao limpar carrinho');
-  }
-
-  // The line "return await response.json()" has been removed.
-  // No return is necessary because the server's response is empty.
+  return handleApiResponse(response);
 };
+

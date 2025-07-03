@@ -1,8 +1,9 @@
+// src/components/NavbarE.tsx
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch, faShoppingCart, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import { faSearch, faShoppingCart, faSignOutAlt, faBoxOpen } from '@fortawesome/free-solid-svg-icons'; // Importar novo ícone
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth'; // Ajuste o caminho
+import { useAuth } from '../hooks/useAuth';
 
 const Navbar = () => {
     const [isScrolled, setIsScrolled] = React.useState(false);
@@ -27,7 +28,7 @@ const Navbar = () => {
     };
 
     return (
-        <header className={`fixed top-0 w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-roxo-profundo shadow-lg' : 'bg-transparent'}`}>
+        <header className={`fixed top-0 w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-black/50 backdrop-blur-md' : 'bg-transparent'}`}>
             <div className="max-w-6xl mx-auto px-4 py-2 flex items-center justify-between">
                 
                 {/* Logo */}
@@ -54,22 +55,19 @@ const Navbar = () => {
                     >
                         Explore
                     </button>
-                    <button 
-                        onClick={() => navigate('/contact')}
-                        className="text-white font-medium hover:text-orange-400"
-                    >
-                        Contact Us
-                    </button>
+                    {/* Link de Pedidos visível apenas se o usuário estiver logado */}
+                    {currentUser && (
+                      <button 
+                          onClick={() => navigate('/orders')}
+                          className="text-white font-medium hover:text-orange-400"
+                      >
+                          Pedidos
+                      </button>
+                    )}
                 </nav>
 
                 {/* Ícones e Botão de Login/Logout */}
                 <div className="hidden md:flex items-center gap-8">
-                    <button 
-                        className="text-white hover:text-orange-400"
-                        onClick={() => navigate('/search')}
-                    >
-                        <FontAwesomeIcon icon={faSearch} size="lg" />
-                    </button>
                     <button 
                         className="text-white hover:text-orange-400"
                         onClick={() => navigate('/cart')}
@@ -92,13 +90,12 @@ const Navbar = () => {
                         ) : 'Login'}
                     </button>
                     
-                    {/* Mostra a foto do usuário se estiver logado */}
                     {currentUser?.photoURL && (
                         <img 
                             src={currentUser.photoURL} 
                             alt="User" 
                             className="w-8 h-8 rounded-full cursor-pointer"
-                            onClick={() => navigate('/profile')}
+                            onClick={() => navigate('/profile')} // Pode levar para uma página de perfil no futuro
                         />
                     )}
                 </div>
