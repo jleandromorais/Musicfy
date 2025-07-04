@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import PhonePLus from '../assets/imagens/foneplus.png';
+import PhonePLus from '../assets/imagens/foneplus.png'; // Certifique-se de que o caminho está correto
 
 const ProductDisplayWithHalo = () => {
   // Estado para o timer
@@ -45,6 +45,7 @@ const ProductDisplayWithHalo = () => {
   }, []);
 
   return (
+    // Removemos 'animate-slideInFromBottom' daqui para que apenas a imagem se mova
     <div className="bg-black text-white min-h-screen flex items-center justify-center p-8 rounded-3xl overflow-hidden">
       <div className="flex flex-col items-center rounded-3xl">
         
@@ -65,7 +66,8 @@ const ProductDisplayWithHalo = () => {
             <img
               src={PhonePLus}
               alt="Produto Premium"
-              className="max-w-full max-h-full object-contain animate-float rounded-2xl"
+              // Adicionamos 'animate-slideInFromBottom' aqui para que apenas o fone de ouvido se mova
+              className="max-w-full max-h-full object-contain animate-float animate-slideInFromBottom rounded-2xl"
             />
           </div>
         </div>
@@ -114,14 +116,28 @@ const ProductDisplayWithHalo = () => {
         </div>
       </div>
 
-      {/* Estilos CSS personalizados */}
-      <style jsx>{`
+      {/* Estilos CSS personalizados para as animações */}
+      <style>{`
         @keyframes float {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-10px); }
         }
         .animate-float {
           animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes slideInFromBottom {
+          0% {
+            transform: translateY(100%);
+            opacity: 0;
+          }
+          100% {
+            transform: translateY(0);
+            opacity: 1;
+          }
+        }
+        .animate-slideInFromBottom {
+          animation: slideInFromBottom 1s ease-out forwards; /* 'forwards' mantém o estado final da animação */
         }
       `}</style>
     </div>

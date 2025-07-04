@@ -1,9 +1,10 @@
+import React from 'react';
 import Navbar from "../components/NavbarE";
 import HeroSection from "../components/Hero";
 import Products from "../components/Product";
 import Banner from "../components/BannerPOrganização";
 import Fone from "../components/ProdutoFone";
-import Acessorios from "../components/Acessorios";
+import AccessoriesGallery from '../components/Acessorios'; // Importe o novo componente AccessoriesGallery
 
 const PagP = () => {
     return (
@@ -16,7 +17,8 @@ const PagP = () => {
             <Banner />
             {/* Adicionando o componente de produto específico */}
             <Fone />
-            <Acessorios />
+            {/* Substituindo ou adicionando AccessoriesGallery. Se Acessorios for diferente, adicione AccessoriesGallery abaixo dele. */}
+            <AccessoriesGallery /> 
         </div>
     );
 }
