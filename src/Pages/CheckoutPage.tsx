@@ -6,6 +6,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useCart } from '../contexts/CartContext';
 import { ToastContainer, toast } from 'react-toastify';
 
+
 // 2. Trazer a mesma lista da página de entrega para que possamos consultar os detalhes
 const opcoesEntrega = [
   { id: 'padrao', name: 'Envio Padrão', price: 15.00, estimatedTime: '5-7 dias úteis' },
@@ -15,7 +16,7 @@ const opcoesEntrega = [
 
 const CheckoutPage: React.FC = () => {
   const { currentUser, loading: authLoading } = useAuth();
-  const { cartItems, cartCount, totalPrice } = useCart();
+  const { cartId, cartItems, totalPrice } = useCart();
   const navigate = useNavigate();
   const location = useLocation(); // 3. Hook para aceder aos dados da navegação
 
@@ -52,75 +53,51 @@ const CheckoutPage: React.FC = () => {
     );
   }
   
-   const handleFinalizeOrder = async () => {
-    // 1. Criar o objeto completo do pedido
-    const pendingOrder = {
-      id: `order_${Date.now()}`, // ID único para o pedido
-      userId: currentUser?.uid,
-      date: new Date().toISOString(),
-      totalPrice: grandTotal,
-      shipping: {
-          name: selectedDeliveryOption?.name,
-          cost: shippingCost,
-          estimatedTime: selectedDeliveryOption?.estimatedTime,
-      },
-      items: cartItems.map(item => ({
-        name: item.name,
-        quantity: item.quantity,
-        price: item.price,
-      })),
-      deliveryAddress: detalhesEntrega, // Salva o endereço de entrega
-    };
+  const handleFinalizeOrder = async () => {
+  console.log('cartId:', cartId);
+  console.log('currentUser:', currentUser);
+  console.log('enderecoId:', detalhesEntrega?.enderecoId);
 
-    // 2. Salvar o pedido pendente no localStorage
-    try {
-        localStorage.setItem('pendingOrder', JSON.stringify(pendingOrder));
-    } catch (e) {
-        toast.error("Não foi possível iniciar o pedido. Tente limpar os dados do seu navegador.");
-        return;
-    }
+  if (!cartId || !currentUser?.id || !detalhesEntrega?.enderecoId) {
+    toast.error('Dados insuficientes para finalizar o pedido.');
+    return;
+  }
 
-
-    // 3. Preparar os itens para o backend (como antes)
-    const checkoutItemsForBackend = [
-      ...cartItems.map(item => ({
-        nomeProduto: item.name,
-        precoUnitario: item.price,
-        quantidade: item.quantity,
-      })),
-      {
-         nomeProduto: `Frete - ${selectedDeliveryOption?.name}`,
-         precoUnitario: shippingCost,
-         quantidade: 1,
-      }
-    ];
-
-    try {
-      const response = await fetch('http://localhost:8080/api/checkout/create-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: checkoutItemsForBackend }),
-      });
-
-      if (!response.ok) {
-        // Se falhar, limpa o pedido pendente
-        localStorage.removeItem('pendingOrder');
-        throw new Error(`Erro na criação da sessão de pagamento: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        localStorage.removeItem('pendingOrder');
-        toast.error("URL de pagamento não recebida.");
-      }
-    } catch (error) {
-      localStorage.removeItem('pendingOrder');
-      console.error('Erro ao finalizar o pedido:', error);
-      toast.error('Falha ao iniciar o pagamento. Tente novamente.');
-    }
+  const payload = {
+    cartId: cartId,
+    userId: currentUser.id,
+    enderecoId: detalhesEntrega.enderecoId,
+    items: cartItems.map((item) => ({
+      nomeProduto: item.name,
+      precoUnitario: item.price,
+      quantidade: item.quantity,
+    })),
   };
+
+  try {
+    const response = await fetch('http://localhost:8080/api/checkout/create-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Erro na criação da sessão de pagamento: ${errorText}`);
+    }
+
+    const data = await response.json();
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      toast.error('URL de pagamento não recebida.');
+    }
+  } catch (error) {
+    console.error('Erro ao finalizar o pedido:', error);
+    toast.error('Falha ao iniciar o pagamento. Tente novamente.');
+  }
+};
+
 
   return (
     <div className="bg-[#1A002F] text-white min-h-screen p-4 sm:p-6 lg:p-8 relative overflow-hidden">

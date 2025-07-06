@@ -2,16 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { FaUser, FaLock, FaEnvelope } from 'react-icons/fa';
 import { FcGoogle } from 'react-icons/fc';
 import {
-    GoogleAuthProvider,
-    signInWithPopup,
-    signInWithRedirect,
-    getRedirectResult,
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    updateProfile,
-    User
+  GoogleAuthProvider,
+  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  updateProfile,
+  // ❌ Remover o User daqui
 } from 'firebase/auth';
-import { auth } from '../firebase';
+
+import type { User } from 'firebase/auth'; // ✅ Mantém só esse
+
+
 import { useNavigate } from 'react-router-dom';
 
 interface FirebaseError extends Error {

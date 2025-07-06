@@ -1,19 +1,22 @@
-import React, { createContext, useState, useContext, useCallback, useMemo, useEffect } from 'react';
-import type { ReactNode } from 'react';
+import React, {
+  createContext,
+  useState,
+  useContext,
+  useCallback,
+  useMemo,
+  useEffect,
+  ReactNode,
+} from 'react';
 
 // --- TIPAGENS ---
 
-// O TIPO DE UM PRODUTO, como definido na sua página de produtos
-// É útil ter tipos compartilhados, mas por agora vamos definir aqui para clareza.
 type Product = {
   id: number;
   name: string;
   price: number;
   img: string;
-  // Outras propriedades que um produto possa ter...
 };
 
-// O TIPO DE UM ITEM DENTRO DO CARRINHO
 export type CartItem = {
   productId: number;
   name: string;
@@ -22,20 +25,21 @@ export type CartItem = {
   quantity: number;
 };
 
-// O TIPO DO CONTEXTO
 export type CartContextType = {
   cartItems: CartItem[];
-  addToCart: (product: Product) => void; // A função espera receber um objeto do tipo 'Product'
+  addToCart: (product: Product) => void;
   removeFromCart: (productId: number) => void;
   updateQuantity: (productId: number, newQuantity: number) => void;
   clearCart: () => void;
   cartCount: number;
   totalPrice: number;
   isInCart: (productId: number) => boolean;
-  changeCartItemQuantity: (product: Product, newQuantity: number) => void; // Também espera um 'Product'
+  changeCartItemQuantity: (product: Product, newQuantity: number) => void;
+  cartId: number | null;
+  setCartId: (id: number | null) => void;
 };
 
-// --- CRIAÇÃO E USO DO CONTEXTO ---
+// --- CONTEXTO ---
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
@@ -49,7 +53,7 @@ export const useCart = () => {
 
 const STORAGE_KEY = 'cartItems';
 
-// --- COMPONENTE PROVIDER (LÓGICA PRINCIPAL) ---
+// --- PROVIDER ---
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
@@ -60,34 +64,34 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     return [];
   });
 
+  const [cartId, setCartId] = useState<number | null>(null);
+
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(cartItems));
   }, [cartItems]);
 
-  // --- FUNÇÕES DO CARRINHO (CORRIGIDAS) ---
-
-  const addToCart = useCallback((product: Product) => { // A função espera um 'Product'
-    setCartItems(prevItems => {
-      // ✅ CORREÇÃO: Usa `product.id` para procurar o item existente
+  const addToCart = useCallback((product: Product) => {
+    setCartItems((prevItems) => {
       const existingItem = prevItems.find(item => item.productId === product.id);
-      
+
       if (existingItem) {
         return prevItems.map(item =>
-          // ✅ CORREÇÃO: Usa `product.id` para encontrar o item a ser atualizado
           item.productId === product.id
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
       }
-      
-      // ✅ CORREÇÃO: Mapeia corretamente `product.id` para `productId`
-      return [...prevItems, {
-        productId: product.id,
-        name: product.name,
-        price: product.price,
-        img: product.img,
-        quantity: 1
-      }];
+
+      return [
+        ...prevItems,
+        {
+          productId: product.id,
+          name: product.name,
+          price: product.price,
+          img: product.img,
+          quantity: 1,
+        },
+      ];
     });
   }, []);
 
@@ -95,64 +99,66 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     setCartItems(prevItems => prevItems.filter(item => item.productId !== productId));
   }, []);
 
-  const updateQuantity = useCallback((productId: number, newQuantity: number) => {
-    if (newQuantity <= 0) {
-      removeFromCart(productId);
-      return;
-    }
-    setCartItems(prevItems =>
-      prevItems.map(item =>
-        item.productId === productId ? { ...item, quantity: newQuantity } : item
-      )
-    );
-  }, [removeFromCart]);
+  const updateQuantity = useCallback(
+    (productId: number, newQuantity: number) => {
+      if (newQuantity <= 0) {
+        removeFromCart(productId);
+        return;
+      }
+      setCartItems(prevItems =>
+        prevItems.map(item =>
+          item.productId === productId ? { ...item, quantity: newQuantity } : item
+        )
+      );
+    },
+    [removeFromCart]
+  );
 
   const clearCart = useCallback(() => {
     setCartItems([]);
   }, []);
 
-  const isInCart = useCallback((productId: number) => {
-    return cartItems.some(item => item.productId === productId);
-  }, [cartItems]);
+  const isInCart = useCallback(
+    (productId: number) => cartItems.some(item => item.productId === productId),
+    [cartItems]
+  );
 
   const changeCartItemQuantity = useCallback((product: Product, newQuantity: number) => {
-      setCartItems(prevItems => {
-        const exitemItm = prevItems.find(item=>item.productId === product.id);
-        if(exitemItm){
-          return prevItems.map(item => // ✅ CORREÇÃO: Usa `product.id` para encontrar o item a ser atualizado
-            item.productId ===product.id // ✅ CORREÇÃO: Usa `product.id` para encontrar o item a ser atualizado
-            ?{...item,quantity:newQuantity}//
-            :item
+    setCartItems(prevItems => {
+      const existingItem = prevItems.find(item => item.productId === product.id);
+      if (existingItem) {
+        return prevItems
+          .map(item =>
+            item.productId === product.id
+              ? { ...item, quantity: newQuantity }
+              : item
           )
-          .filter(item => item.quantity > 0);// ✅ CORREÇÃO: Remove itens com quantidade zero
-        }
-        return [...prevItems,{// ✅ CORREÇÃO: Mapeia corretamente `product.id` para `productId`
+          .filter(item => item.quantity > 0);
+      }
+      return [
+        ...prevItems,
+        {
           productId: product.id,
           name: product.name,
           price: product.price,
           img: product.img,
-          quantity: newQuantity
-        }];
-      });
-    }, []);
-    //--Carrinho limpo 
-   
+          quantity: newQuantity,
+        },
+      ];
+    });
+  }, []);
 
-  // --- VALORES MEMORIZADOS ---
-  
-  const cartCount = useMemo(() =>
-    cartItems.reduce((count, item) => count + item.quantity, 0),
+  const cartCount = useMemo(
+    () => cartItems.reduce((count, item) => count + item.quantity, 0),
     [cartItems]
   );
 
-  const totalPrice = useMemo(() =>
-    cartItems.reduce((total, item) => total + item.price * item.quantity, 0),
+  const totalPrice = useMemo(
+    () => cartItems.reduce((total, item) => total + item.price * item.quantity, 0),
     [cartItems]
   );
 
-  // --- VALOR DO CONTEXTO ---
-
-  const value = {
+  const value: CartContextType = {
     cartItems,
     addToCart,
     removeFromCart,
@@ -161,7 +167,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     cartCount,
     totalPrice,
     isInCart,
-    changeCartItemQuantity
+    changeCartItemQuantity,
+    cartId,
+    setCartId,
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

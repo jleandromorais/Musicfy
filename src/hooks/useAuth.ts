@@ -1,58 +1,36 @@
-// hooks/useAuth.ts
 import { useState, useEffect } from 'react';
-import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
-import type { User } from 'firebase/auth'; // Importação type-only
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from '../firebase';
+import type { User as AppUser } from '../types/User'; // <-- Seu tipo com id
 
 export const useAuth = () => {
-    const [currentUser, setCurrentUser] = useState<User | null>(null);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<AppUser | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
         try {
-            if (!auth) {
-                throw new Error('Firebase Auth não está inicializado');
-            }
-
-            const unsubscribe = onAuthStateChanged(
-                auth, 
-                (user) => {
-                    setCurrentUser(user);
-                    setLoading(false);
-                    setError(null);
-                },
-                (authError) => {
-                    setError(`Erro de autenticação: ${authError.message}`);
-                    setLoading(false);
-                }
-            );
-
-            return unsubscribe;
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Erro desconhecido');
-            setLoading(false);
+          const response = await fetch(`http://localhost:8080/api/users/firebase/${firebaseUser.uid}`);
+          const userData: AppUser = await response.json();
+          setCurrentUser(userData); // ✅ Agora contém id, nome, email, etc.
+        } catch (e) {
+          setError('Erro ao buscar usuário');
         }
-    }, []);
+      } else {
+        setCurrentUser(null);
+      }
+      setLoading(false);
+    });
 
-    const logout = async () => {
-        try {
-            setLoading(true);
-            await signOut(auth);
-            setCurrentUser(null);
-        } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido no logout';
-            setError(errorMessage);
-            console.error("Erro no logout:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    return unsubscribe;
+  }, []);
 
-    return { 
-        currentUser, 
-        loading, 
-        error,
-        logout 
-    };
+  const logout = async () => {
+    await signOut(auth);
+    setCurrentUser(null);
+  };
+
+  return { currentUser, loading, error, logout };
 };
