@@ -1,3 +1,4 @@
+// src/components/Product.tsx
 import React, { useRef } from 'react';
 import { FaShoppingCart, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
@@ -21,15 +22,18 @@ interface Produto {
 
 const Produtos = () => {
   const navigate = useNavigate();
-  const { addToCart } = useCart();
+  // Adicione setCartId aqui para que você possa atualizar o contexto
+  const { addToCart, setCartId } = useCart();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const adicionarAoCarrinho = async (produto: Produto) => {
     try {
-      let cartId = localStorage.getItem("cartId");
+      // Obtenha o cartId do localStorage. O CartContext também o lê, mas essa lógica
+      // aqui é para o fluxo de adição/criação.
+      let currentCartId = localStorage.getItem("cartId");
 
-      if (cartId) {
-        await adicionarItemAoCarrinho(cartId, {
+      if (currentCartId) {
+        await adicionarItemAoCarrinho(currentCartId, {
           productId: produto.id,
           quantity: 1
         });
@@ -39,8 +43,13 @@ const Produtos = () => {
           quantity: 1
         });
 
-        cartId = response.cartId || response.cart?.id;
-        if (cartId) localStorage.setItem("cartId", cartId.toString());
+        // Verifique se a resposta contém o ID do carrinho e use-o
+        currentCartId = response.cartId || response.cart?.id;
+        if (currentCartId) {
+          localStorage.setItem("cartId", currentCartId.toString());
+          // ATUALIZA O CONTEXTO AQUI: Garante que o cartId do contexto seja o mesmo do localStorage
+          setCartId(parseInt(currentCartId, 10));
+        }
       }
 
       addToCart({

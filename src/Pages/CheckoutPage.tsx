@@ -1,13 +1,12 @@
 // src/Pages/CheckoutPage.tsx
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom'; // 1. Importar useLocation
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useCart } from '../contexts/CartContext';
 import { ToastContainer, toast } from 'react-toastify';
 
 
-// 2. Trazer a mesma lista da página de entrega para que possamos consultar os detalhes
 const opcoesEntrega = [
   { id: 'padrao', name: 'Envio Padrão', price: 15.00, estimatedTime: '5-7 dias úteis' },
   { id: 'expresso', name: 'Envio Expresso', price: 30.00, estimatedTime: '1-3 dias úteis' },
@@ -18,17 +17,14 @@ const CheckoutPage: React.FC = () => {
   const { currentUser, loading: authLoading } = useAuth();
   const { cartId, cartItems, totalPrice } = useCart();
   const navigate = useNavigate();
-  const location = useLocation(); // 3. Hook para aceder aos dados da navegação
+  const location = useLocation();
 
-  // 4. Extrair os detalhes da entrega passados pela página anterior
   const { detalhesEntrega } = location.state || {};
   
-  // 5. Encontrar os detalhes da opção de entrega escolhida pelo usuário
   const selectedDeliveryOption = opcoesEntrega.find(
     opt => opt.id === (detalhesEntrega?.metodoEntrega || 'padrao')
   );
 
-  // 6. Calcular o custo do frete e o total final
   const shippingCost = selectedDeliveryOption?.price ?? 0;
   const grandTotal = totalPrice + shippingCost;
 
@@ -37,14 +33,12 @@ const CheckoutPage: React.FC = () => {
       toast.info("Por favor, faça login para prosseguir com a compra.");
       navigate('/login');
     }
-    // Garante que o usuário não aceda a esta página sem passar pelos detalhes da entrega
     if (!authLoading && !detalhesEntrega) {
         toast.warn("Detalhes da entrega não encontrados. Por favor, preencha novamente.");
         navigate('/delivery');
     }
   }, [currentUser, authLoading, navigate, detalhesEntrega]);
 
-  // Se os dados ainda estiverem a ser carregados ou não existirem, mostra uma mensagem
   if (authLoading || !detalhesEntrega) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#1A002F] text-white">
@@ -58,7 +52,10 @@ const CheckoutPage: React.FC = () => {
   console.log('currentUser:', currentUser);
   console.log('enderecoId:', detalhesEntrega?.enderecoId);
 
-  if (!cartId || !currentUser?.id || !detalhesEntrega?.enderecoId) {
+  // Se detalhesEntrega?.enderecoId for undefined, ele se tornará null aqui.
+  const finalEnderecoId = detalhesEntrega?.enderecoId ?? null;
+
+  if (!cartId || !currentUser?.id || finalEnderecoId === null) {
     toast.error('Dados insuficientes para finalizar o pedido.');
     return;
   }
@@ -66,7 +63,7 @@ const CheckoutPage: React.FC = () => {
   const payload = {
     cartId: cartId,
     userId: currentUser.id,
-    enderecoId: detalhesEntrega.enderecoId,
+    enderecoId: finalEnderecoId, // Use o valor tratado aqui
     items: cartItems.map((item) => ({
       nomeProduto: item.name,
       precoUnitario: item.price,

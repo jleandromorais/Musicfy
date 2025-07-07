@@ -1,3 +1,4 @@
+// src/contexts/CartContext.tsx
 import React, {
   createContext,
   useState,
@@ -52,6 +53,7 @@ export const useCart = () => {
 };
 
 const STORAGE_KEY = 'cartItems';
+const CART_ID_STORAGE_KEY = 'cartId'; // Definir uma chave para o cartId no localStorage
 
 // --- PROVIDER ---
 
@@ -64,11 +66,29 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     return [];
   });
 
-  const [cartId, setCartId] = useState<number | null>(null);
+  // Modificação: Inicializar cartId do localStorage
+  const [cartId, setCartId] = useState<number | null>(() => {
+    if (typeof window !== 'undefined') {
+      const savedCartId = localStorage.getItem(CART_ID_STORAGE_KEY);
+      // Converter para número, se existir, caso contrário null
+      return savedCartId ? parseInt(savedCartId, 10) : null;
+    }
+    return null;
+  });
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(cartItems));
   }, [cartItems]);
+
+  // Novo useEffect: Persistir o cartId no localStorage sempre que ele mudar
+  useEffect(() => {
+    if (cartId !== null) {
+      localStorage.setItem(CART_ID_STORAGE_KEY, cartId.toString());
+    } else {
+      localStorage.removeItem(CART_ID_STORAGE_KEY); // Remover se o carrinho for limpo ou não houver ID
+    }
+  }, [cartId]);
+
 
   const addToCart = useCallback((product: Product) => {
     setCartItems((prevItems) => {
@@ -116,6 +136,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const clearCart = useCallback(() => {
     setCartItems([]);
+    setCartId(null); // Limpar o cartId no contexto também
   }, []);
 
   const isInCart = useCallback(
@@ -169,7 +190,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     isInCart,
     changeCartItemQuantity,
     cartId,
-    setCartId,
+    setCartId, // Tornar setCartId disponível no contexto
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
