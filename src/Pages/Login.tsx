@@ -16,6 +16,7 @@ import type { User } from 'firebase/auth';
 import { auth } from '../firebase';
 
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';  // <-- Import do hook de autenticação
 
 interface FirebaseError extends Error {
     code: string;
@@ -28,9 +29,18 @@ const AuthPage = () => {
     const [loading, setLoading] = useState<boolean>(false);
     const navigate = useNavigate();
 
+    const { currentUser, loading: carregandoUsuario } = useAuth(); // <-- Hook para pegar usuário atual
+
     const [fullName, setFullName] = useState<string>('');
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
+
+    // Redireciona usuário já logado para a home (ou página desejada)
+    useEffect(() => {
+        if (!carregandoUsuario && currentUser) {
+            navigate('/');
+        }
+    }, [carregandoUsuario, currentUser, navigate]);
 
     // Função para registrar o usuário no backend ou lidar com o caso de já existir
     const registerUserInBackend = async (user: User): Promise<any> => { // Retorna 'any' para flexibilidade na resposta JSON
@@ -49,7 +59,6 @@ const AuthPage = () => {
                 body: JSON.stringify(userDTO)
             });
 
-            // Tenta ler a resposta como texto primeiro para verificar se está vazia
             const responseText = await response.text();
             let responseJson = {};
 
@@ -58,19 +67,16 @@ const AuthPage = () => {
                     responseJson = JSON.parse(responseText);
                 } catch (jsonError) {
                     console.error('Erro ao analisar JSON da resposta do backend:', jsonError, 'Resposta:', responseText);
-                    // Se não for JSON, tratamos como texto simples
                     responseJson = { message: responseText };
                 }
             }
 
             if (!response.ok) {
-                // Se o status for 409 Conflict (usuário já existe), não tratamos como erro crítico
                 if (response.status === 409) {
                     console.warn('Usuário já existe no backend, prosseguindo com o login.');
-                    return responseJson; // Retorna a resposta (provavelmente com a mensagem de conflito)
+                    return responseJson;
                 }
 
-                // Para outros erros HTTP, usa a mensagem do JSON ou o texto bruto
                 const errorMessage = typeof responseJson === 'object' && responseJson !== null && 'message' in responseJson
                     ? responseJson.message
                     : String(responseText || 'Failed to register user in backend');
@@ -78,10 +84,10 @@ const AuthPage = () => {
             }
 
             console.log('Usuário registrado com sucesso no backend:', responseJson);
-            return responseJson; // Retorna o JSON da resposta (que deve conter o ID do usuário)
+            return responseJson;
         } catch (error) {
             console.error('Erro no registro do backend:', error);
-            throw error; // Ainda lança outros erros de rede ou de processamento
+            throw error;
         }
     };
 
@@ -129,7 +135,6 @@ const AuthPage = () => {
                 errorMessage = 'O popup de login foi fechado.';
             } else if (err.code === 'auth/popup-blocked') {
                 errorMessage = 'O popup de login foi bloqueado. Por favor, permita popups.';
-                // Se o popup for bloqueado, tenta com redirecionamento
                 await signInWithRedirect(auth, provider);
             } else if (err.message) {
                 errorMessage = err.message;

@@ -1,3 +1,4 @@
+// src/hooks/useAuth.ts
 import { useState, useEffect } from 'react';
 import { onAuthStateChanged, signOut, type User as FirebaseUser } from 'firebase/auth';
 import { auth } from '../firebase';
@@ -10,36 +11,69 @@ export const useAuth = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
-      setFirebaseUser(fbUser);
-      if (fbUser) {
-        try {
-          const response = await fetch(`http://localhost:8080/api/usuario/firebase/${fbUser.uid}`);
-          if (!response.ok) {
-            const errorData = await response.text();
-            throw new Error(`Falha ao buscar dados do usuário no backend: ${response.status} - ${errorData}`);
+  const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+    setFirebaseUser(fbUser);
+    setError(null);
+
+    if (fbUser) {
+      try {
+        // 1. Buscar usuário no backend
+        let buscarResponse = await fetch(`http://localhost:8080/api/usuario/firebase/${fbUser.uid}`);
+
+        // 2. Se não existir (404), tentar criar
+        if (buscarResponse.status === 404) {
+          const criarResponse = await fetch('http://localhost:8080/api/usuario/criar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              firebaseUid: fbUser.uid,
+              fullName: fbUser.displayName ?? 'Usuário',
+              email: fbUser.email ?? '',
+            }),
+          });
+
+          if (!criarResponse.ok) {
+            throw new Error(`Erro ao criar usuário: ${await criarResponse.text()}`);
           }
-          const userData: AppUser = await response.json();
-          setCurrentUser(userData);
-        } catch (e) {
-          setError('Erro ao buscar usuário do backend.');
-          setCurrentUser(null);
+
+          // Rebuscar o usuário após criação
+          buscarResponse = await fetch(`http://localhost:8080/api/usuario/firebase/${fbUser.uid}`);
+          if (!buscarResponse.ok) {
+            throw new Error(`Erro ao buscar usuário depois de criar: ${await buscarResponse.text()}`);
+          }
         }
-      } else {
+
+        // 3. Usuário encontrado ou criado com sucesso
+        const userData: AppUser = await buscarResponse.json();
+        setCurrentUser(userData);
+
+      } catch (e) {
+        const errorMessage =
+          e instanceof Error ? e.message : 'Erro desconhecido ao autenticar usuário.';
+        console.error('[useAuth] erro:', errorMessage);
+        setError(errorMessage);
         setCurrentUser(null);
       }
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
+    } else {
+      setCurrentUser(null);
+    }
+
+    setLoading(false);
+  });
+
+  return () => unsubscribe();
+}, []);
 
   const logout = async () => {
     try {
       await signOut(auth);
       setCurrentUser(null);
       setFirebaseUser(null);
+      setError(null);
     } catch (e) {
-      setError('Erro ao sair da conta.');
+      const errorMessage =
+        e instanceof Error ? e.message : 'Erro desconhecido ao sair da conta.';
+      setError(errorMessage);
     }
   };
 

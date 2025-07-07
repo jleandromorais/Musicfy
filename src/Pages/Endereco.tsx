@@ -1,5 +1,7 @@
+// src/Pages/Endereco.tsx
+
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom'; // Adicionado useLocation
 import { ToastContainer, toast } from 'react-toastify';
 import { useAuth } from '../hooks/useAuth';
 import { useCart } from '../contexts/CartContext';
@@ -19,9 +21,11 @@ const tiposEndereco = [
 ];
 
 const PaginaDetalhesEntrega: React.FC = () => {
-  const { currentUser, loading: carregandoAuth } = useAuth();
+  const { currentUser, loading: carregandoAuth, error: authError } = useAuth(); // Captura o 'error' do useAuth
   const { cartCount } = useCart();
   const navigate = useNavigate();
+  const location = useLocation(); // Adicionado para consistência, embora não usado diretamente aqui
+
   const [carregandoCEP, setCarregandoCEP] = useState(false);
 
   // Estados do endereço
@@ -35,17 +39,23 @@ const PaginaDetalhesEntrega: React.FC = () => {
   const [tipoEndereco, setTipoEndereco] = useState<string>(tiposEndereco[0].id);
   const [metodoEntregaSelecionado, setMetodoEntregaSelecionado] = useState<string>(opcoesEntrega[0].id);
 
-  // Redirecionamento se não autenticado ou carrinho vazio
+  // Redirecionamento se carrinho vazio (e se já autenticado)
   useEffect(() => {
-    if (!carregandoAuth && !currentUser) {
-      toast.info("Por favor, faça login para prosseguir com a compra.");
-      navigate('/login');
-    }
+    // Se o loading da autenticação terminou, o usuário não existe E não houve um erro authError ainda (para não mostrar toast duplicado)
+    // Então, se o usuário não está autenticado, ele será redirecionado pelo botão 'Continuar para Pagamento'.
+    // Este useEffect foca em carrinho vazio ou erros de autenticação (se existirem).
     if (!carregandoAuth && currentUser && cartCount === 0) {
       toast.info("Seu carrinho está vazio. Adicione produtos para continuar.");
       navigate('/cart');
     }
-  }, [currentUser, carregandoAuth, navigate, cartCount]);
+
+    // Exibe erros de autenticação que podem ter vindo do useAuth
+    if (!carregandoAuth && authError) { // Exibe o erro apenas quando o carregamento terminar
+      toast.error(`Erro de autenticação: ${authError}. Por favor, tente novamente ou faça login.`);
+      // Opcional: Se o erro for crítico e o usuário não estiver logado, redirecionar para login.
+      // if (!currentUser) { navigate('/login'); }
+    }
+  }, [currentUser, carregandoAuth, navigate, cartCount, authError]); // Adicione authError nas dependências
 
   // Buscar endereço via CEP
   useEffect(() => {
@@ -82,6 +92,22 @@ const PaginaDetalhesEntrega: React.FC = () => {
   const continuarParaPagamento = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Verificação de autenticação no clique do botão
+    if (carregandoAuth) {
+      toast.warn("Aguarde a verificação do seu status de login.");
+      return;
+    }
+    if (!currentUser) {
+      toast.info("Você precisa estar logado para continuar.");
+      navigate('/login');
+      return;
+    }
+    if (authError) { // Não permite continuar se há um erro de autenticação pendente
+      toast.error(`Não é possível continuar devido a um erro de autenticação: ${authError}`);
+      return;
+    }
+
+
     if (cep.replace(/\D/g, '').length !== 8) {
       toast.error("Por favor, insira um CEP válido com 8 dígitos.");
       return;
@@ -97,7 +123,7 @@ const PaginaDetalhesEntrega: React.FC = () => {
       return;
     }
 
-    const detalhesEntregaParaEnvio = { // Renomeado para evitar conflito com 'enderecoCriado'
+    const detalhesEntregaParaEnvio = {
       cep,
       rua,
       numero,
@@ -106,31 +132,29 @@ const PaginaDetalhesEntrega: React.FC = () => {
       cidade,
       estado,
       tipo: tipoEndereco,
-      metodoEntrega: metodoEntregaSelecionado, // Mantenha este para passar adiante
+      metodoEntrega: metodoEntregaSelecionado,
     };
 
     try {
-      // Envia os detalhes do endereço para o backend
       const enderecoCriado = await criarEndereco(detalhesEntregaParaEnvio);
-      console.log("Objeto enderecoCriado recebido do backend:", enderecoCriado); // Mantenha este log
+      console.log("Objeto enderecoCriado recebido do backend:", enderecoCriado);
       toast.success("Endereço salvo com sucesso!");
 
-      // Verificação para garantir que enderecoCriado é um objeto e tem um 'id'
       const idDoEndereco = (typeof enderecoCriado === 'object' && enderecoCriado !== null && 'id' in enderecoCriado)
-                           ? enderecoCriado.id
-                           : undefined; 
+                             ? enderecoCriado.id
+                             : undefined;
 
-      if (idDoEndereco === undefined) { 
+      if (idDoEndereco === undefined) {
           console.error("Erro: ID do endereço não encontrado no objeto retornado pelo backend.", enderecoCriado);
           toast.error("Erro ao salvar endereço: ID do endereço não recebido. Tente novamente.");
-          return; 
+          return;
       }
 
       navigate('/checkout', {
         state: {
           detalhesEntrega: {
-            ...detalhesEntregaParaEnvio, // Use os detalhes iniciais que foram enviados
-            enderecoId: idDoEndereco, // Adiciona explicitamente o enderecoId
+            ...detalhesEntregaParaEnvio,
+            enderecoId: idDoEndereco,
           }
         }
       });
@@ -139,6 +163,16 @@ const PaginaDetalhesEntrega: React.FC = () => {
       toast.error("Erro ao salvar o endereço. Tente novamente.");
     }
   };
+
+  // --- BLOCO DE CARREGAMENTO PARA INFORMAÇÕES DE AUTENTICAÇÃO ---
+  if (carregandoAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#1A002F] text-white">
+        Carregando informações de usuário...
+      </div>
+    );
+  }
+  // --- FIM DO BLOCO DE CARREGAMENTO ---
 
   return (
     <div className="bg-[#1A002F] text-white min-h-screen p-4 sm:p-6 lg:p-8 relative overflow-hidden">

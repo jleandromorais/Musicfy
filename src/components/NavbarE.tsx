@@ -87,7 +87,7 @@ const Navbar = () => {
                 <FontAwesomeIcon icon={faSignOutAlt} />
                 Sair
               </>
-            ) : '/'}
+            ) : 'Login'}
           </button>
         </div>
       </div>
