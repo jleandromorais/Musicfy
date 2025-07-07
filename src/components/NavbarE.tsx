@@ -1,107 +1,98 @@
 // src/components/NavbarE.tsx
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch, faShoppingCart, faSignOutAlt, faBoxOpen } from '@fortawesome/free-solid-svg-icons'; // Importar novo ícone
+import { faSearch, faShoppingCart, faSignOutAlt, faBoxOpen, faUser } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
 const Navbar = () => {
-    const [isScrolled, setIsScrolled] = React.useState(false);
-    const navigate = useNavigate();
-    const { currentUser, logout } = useAuth();
+  const [isScrolled, setIsScrolled] = React.useState(false);
+  const navigate = useNavigate();
+  const { currentUser, firebaseUser, logout } = useAuth();
 
-    React.useEffect(() => {
-        const handleScroll = () => {
-            setIsScrolled(window.scrollY > 50);
-        };
+  const handleAuthAction = async () => {
+    if (firebaseUser) {
+      await logout();
+      navigate('/login');
+    } else {
+      navigate('/login');
+    }
+  };
 
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
+  const getUserFirstName = () => {
+    const name = firebaseUser?.displayName || currentUser?.fullName || '';
+    return name.split(' ')[0];
+  };
 
-    const handleAuthAction = () => {
-        if (currentUser) {
-            logout();
-        } else {
-            navigate('/login');
-        }
+  React.useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
     };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
-    return (
-        <header className={`fixed top-0 w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-black/50 backdrop-blur-md' : 'bg-transparent'}`}>
-            <div className="max-w-6xl mx-auto px-4 py-2 flex items-center justify-between">
-                
-                {/* Logo */}
-                <div className="flex-shrink-0">
-                    <img 
-                        src="/Logo.svg" 
-                        alt="Logo" 
-                        className="h-20 w-auto cursor-pointer" 
-                        onClick={() => navigate('/')} 
-                    />
-                </div>
+  return (
+    <header className={`fixed top-0 w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-black/50 backdrop-blur-md' : 'bg-transparent'}`}>
+      <div className="max-w-6xl mx-auto px-4 py-2 flex items-center justify-between">
 
-                {/* Menu de Navegação */}
-                <nav className="hidden md:flex gap-8">
-                    <button 
-                        onClick={() => navigate('/')} 
-                        className="text-white font-medium hover:text-orange-400"
-                    >
-                        Home
-                    </button>
-                    <button 
-                        onClick={() => navigate('/explore')}
-                        className="text-white font-medium hover:text-orange-400"
-                    >
-                        Explore
-                    </button>
-                    {/* Link de Pedidos visível apenas se o usuário estiver logado */}
-                    {currentUser && (
-                      <button 
-                          onClick={() => navigate('/orders')}
-                          className="text-white font-medium hover:text-orange-400"
-                      >
-                          Pedidos
-                      </button>
-                    )}
-                </nav>
+        {/* Logo */}
+        <div className="flex-shrink-0">
+          <img
+            src="/Logo.svg"
+            alt="Logo"
+            className="h-20 w-auto cursor-pointer"
+            onClick={() => navigate('/')}
+          />
+        </div>
 
-                {/* Ícones e Botão de Login/Logout */}
-                <div className="hidden md:flex items-center gap-8">
-                    <button 
-                        className="text-white hover:text-orange-400"
-                        onClick={() => navigate('/cart')}
-                    >
-                        <FontAwesomeIcon icon={faShoppingCart} size="lg" />
-                    </button>
-                    <button 
-                        onClick={handleAuthAction}
-                        className={`flex items-center gap-2 px-5 py-1.5 rounded-md font-medium transition-colors ${
-                            currentUser 
-                                ? 'bg-orange-400 text-white hover:bg-orange-500'
-                                : 'bg-transparent text-orange-400 border border-orange-400 hover:bg-orange-400 hover:text-white'
-                        }`}
-                    >
-                        {currentUser ? (
-                            <>
-                                <FontAwesomeIcon icon={faSignOutAlt} />
-                                Sair
-                            </>
-                        ) : 'Login'}
-                    </button>
-                    
-                    {currentUser?.photoURL && (
-                        <img 
-                            src={currentUser.photoURL} 
-                            alt="User" 
-                            className="w-8 h-8 rounded-full cursor-pointer"
-                            onClick={() => navigate('/profile')} // Pode levar para uma página de perfil no futuro
-                        />
-                    )}
-                </div>
-            </div>
-        </header>
-    );
+        {/* Navegação */}
+        <nav className="hidden md:flex gap-8">
+          <button onClick={() => navigate('/')} className="text-white font-medium hover:text-orange-400">Home</button>
+          <button onClick={() => navigate('/explore')} className="text-white font-medium hover:text-orange-400">Explore</button>
+           <button onClick={() => navigate('/orders')} className="text-white font-medium hover:text-orange-400">Pedidos</button>
+         
+        </nav>
+
+        {/* Ações */}
+        <div className="hidden md:flex items-center gap-6">
+          <button className="text-white hover:text-orange-400" onClick={() => navigate('/cart')}>
+            <FontAwesomeIcon icon={faShoppingCart} size="lg" />
+          </button>
+
+          {firebaseUser && (
+            <>
+              <div className="text-white">Olá, {getUserFirstName()}</div>
+
+              <div className="w-8 h-8 rounded-full bg-orange-400 flex items-center justify-center cursor-pointer" onClick={() => navigate('/profile')}>
+                {firebaseUser.photoURL ? (
+                  <img src={firebaseUser.photoURL} alt="User" className="w-full h-full rounded-full" />
+                ) : (
+                  <FontAwesomeIcon icon={faUser} className="text-white text-sm" />
+                )}
+              </div>
+            </>
+          )}
+
+          <button
+            onClick={handleAuthAction}
+            className={`flex items-center gap-2 px-5 py-1.5 rounded-md font-medium transition-colors ${
+              firebaseUser
+                ? 'bg-orange-400 text-white hover:bg-orange-500'
+                : 'bg-transparent text-orange-400 border border-orange-400 hover:bg-orange-400 hover:text-white'
+            }`}
+          >
+            {firebaseUser ? (
+              <>
+                <FontAwesomeIcon icon={faSignOutAlt} />
+                Sair
+              </>
+            ) : '/'}
+          </button>
+        </div>
+      </div>
+    </header>
+  );
 };
 
 export default Navbar;

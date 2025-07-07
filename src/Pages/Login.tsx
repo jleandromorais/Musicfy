@@ -1,3 +1,4 @@
+// src/Pages/Login.tsx
 import React, { useState, useEffect } from 'react';
 import { FaUser, FaLock, FaEnvelope } from 'react-icons/fa';
 import { FcGoogle } from 'react-icons/fc';
@@ -9,11 +10,10 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   updateProfile,
-  // ❌ Remover o User daqui
 } from 'firebase/auth';
 
-import type { User } from 'firebase/auth'; // ✅ Mantém só esse
-
+import type { User } from 'firebase/auth';
+import { auth } from '../firebase';
 
 import { useNavigate } from 'react-router-dom';
 
@@ -32,8 +32,8 @@ const AuthPage = () => {
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
 
-    // ✅ NOVA função: envia apenas o DTO sem token
-    const registerUserInBackend = async (user: User) => {
+    // Função para registrar o usuário no backend ou lidar com o caso de já existir
+    const registerUserInBackend = async (user: User): Promise<any> => { // Retorna 'any' para flexibilidade na resposta JSON
         try {
             const userDTO = {
                 firebaseUid: user.uid,
@@ -49,15 +49,39 @@ const AuthPage = () => {
                 body: JSON.stringify(userDTO)
             });
 
-            if (!response.ok) {
-                const errorData = await response.text();
-                throw new Error(errorData || 'Failed to register user in backend');
+            // Tenta ler a resposta como texto primeiro para verificar se está vazia
+            const responseText = await response.text();
+            let responseJson = {};
+
+            if (responseText) {
+                try {
+                    responseJson = JSON.parse(responseText);
+                } catch (jsonError) {
+                    console.error('Erro ao analisar JSON da resposta do backend:', jsonError, 'Resposta:', responseText);
+                    // Se não for JSON, tratamos como texto simples
+                    responseJson = { message: responseText };
+                }
             }
 
-            return await response.text();
+            if (!response.ok) {
+                // Se o status for 409 Conflict (usuário já existe), não tratamos como erro crítico
+                if (response.status === 409) {
+                    console.warn('Usuário já existe no backend, prosseguindo com o login.');
+                    return responseJson; // Retorna a resposta (provavelmente com a mensagem de conflito)
+                }
+
+                // Para outros erros HTTP, usa a mensagem do JSON ou o texto bruto
+                const errorMessage = typeof responseJson === 'object' && responseJson !== null && 'message' in responseJson
+                    ? responseJson.message
+                    : String(responseText || 'Failed to register user in backend');
+                throw new Error(errorMessage);
+            }
+
+            console.log('Usuário registrado com sucesso no backend:', responseJson);
+            return responseJson; // Retorna o JSON da resposta (que deve conter o ID do usuário)
         } catch (error) {
-            console.error('Backend registration error:', error);
-            throw error;
+            console.error('Erro no registro do backend:', error);
+            throw error; // Ainda lança outros erros de rede ou de processamento
         }
     };
 
@@ -69,12 +93,16 @@ const AuthPage = () => {
                     try {
                         await registerUserInBackend(result.user);
                         navigate('/');
-                    } catch {
-                        setError('Failed to register user in backend');
+                    } catch (e) {
+                        setError('Falha ao registrar/processar usuário no backend.');
+                        console.error("Erro no processamento do usuário após redirect:", e);
                     }
                 }
             } catch (error) {
-                console.error("Redirect error:", error);
+                console.error("Erro de redirecionamento:", error);
+                setError("Ocorreu um erro durante o redirecionamento do login.");
+            } finally {
+                setLoading(false);
             }
         };
         handleRedirectResult();
@@ -83,35 +111,31 @@ const AuthPage = () => {
     const toggleView = () => setIsLoginView(!isLoginView);
 
     const handleGoogleSignIn = async () => {
+        setLoading(true);
+        setError(null);
         try {
-            setLoading(true);
-            setError(null);
-
             const provider = new GoogleAuthProvider();
             provider.setCustomParameters({
                 prompt: 'select_account'
             });
 
-            try {
-                const result = await signInWithPopup(auth, provider);
-                await registerUserInBackend(result.user);
-                navigate('/');
-            } catch (popupError) {
-                if ((popupError as FirebaseError).code === 'auth/popup-blocked') {
-                    await signInWithRedirect(auth, provider);
-                } else {
-                    throw popupError;
-                }
-            }
+            const result = await signInWithPopup(auth, provider);
+            await registerUserInBackend(result.user);
+            navigate('/');
         } catch (error) {
             const err = error as FirebaseError;
-            let errorMessage = 'Failed to sign in with Google';
+            let errorMessage = 'Falha ao fazer login com o Google.';
             if (err.code === 'auth/popup-closed-by-user') {
-                errorMessage = 'Login popup was closed before completing';
+                errorMessage = 'O popup de login foi fechado.';
+            } else if (err.code === 'auth/popup-blocked') {
+                errorMessage = 'O popup de login foi bloqueado. Por favor, permita popups.';
+                // Se o popup for bloqueado, tenta com redirecionamento
+                await signInWithRedirect(auth, provider);
             } else if (err.message) {
                 errorMessage = err.message;
             }
             setError(errorMessage);
+            console.error('Erro de autenticação Google:', err);
         } finally {
             setLoading(false);
         }
@@ -132,7 +156,6 @@ const AuthPage = () => {
                     await updateProfile(userCredential.user, {
                         displayName: fullName
                     });
-
                     await registerUserInBackend(userCredential.user);
                 }
                 navigate('/');
@@ -157,7 +180,7 @@ const AuthPage = () => {
                     break;
                 default:
                     setError("Falha na autenticação. Tente novamente.");
-                    console.error('Auth error:', err);
+                    console.error('Erro de autenticação:', err);
             }
         } finally {
             setLoading(false);

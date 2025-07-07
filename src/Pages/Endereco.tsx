@@ -97,7 +97,7 @@ const PaginaDetalhesEntrega: React.FC = () => {
       return;
     }
 
-    const detalhesEntrega = {
+    const detalhesEntregaParaEnvio = { // Renomeado para evitar conflito com 'enderecoCriado'
       cep,
       rua,
       numero,
@@ -106,15 +106,34 @@ const PaginaDetalhesEntrega: React.FC = () => {
       cidade,
       estado,
       tipo: tipoEndereco,
-      metodoEntrega: metodoEntregaSelecionado,
+      metodoEntrega: metodoEntregaSelecionado, // Mantenha este para passar adiante
     };
 
     try {
       // Envia os detalhes do endereço para o backend
-      const enderecoCriado = await criarEndereco(detalhesEntrega);
-      console.log("Endereço criado com sucesso:", enderecoCriado);
+      const enderecoCriado = await criarEndereco(detalhesEntregaParaEnvio);
+      console.log("Objeto enderecoCriado recebido do backend:", enderecoCriado); // Mantenha este log
       toast.success("Endereço salvo com sucesso!");
-      navigate('/checkout', { state: { detalhesEntrega: enderecoCriado } });
+
+      // Verificação para garantir que enderecoCriado é um objeto e tem um 'id'
+      const idDoEndereco = (typeof enderecoCriado === 'object' && enderecoCriado !== null && 'id' in enderecoCriado)
+                           ? enderecoCriado.id
+                           : undefined; 
+
+      if (idDoEndereco === undefined) { 
+          console.error("Erro: ID do endereço não encontrado no objeto retornado pelo backend.", enderecoCriado);
+          toast.error("Erro ao salvar endereço: ID do endereço não recebido. Tente novamente.");
+          return; 
+      }
+
+      navigate('/checkout', {
+        state: {
+          detalhesEntrega: {
+            ...detalhesEntregaParaEnvio, // Use os detalhes iniciais que foram enviados
+            enderecoId: idDoEndereco, // Adiciona explicitamente o enderecoId
+          }
+        }
+      });
     } catch (error) {
       console.error("Erro ao criar endereço:", error);
       toast.error("Erro ao salvar o endereço. Tente novamente.");

@@ -1,36 +1,47 @@
 import { useState, useEffect } from 'react';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { onAuthStateChanged, signOut, type User as FirebaseUser } from 'firebase/auth';
 import { auth } from '../firebase';
-import type { User as AppUser } from '../types/User'; // <-- Seu tipo com id
+import type { User as AppUser } from '../types/User';
 
 export const useAuth = () => {
   const [currentUser, setCurrentUser] = useState<AppUser | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
+    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+      setFirebaseUser(fbUser);
+      if (fbUser) {
         try {
-          const response = await fetch(`http://localhost:8080/api/users/firebase/${firebaseUser.uid}`);
+          const response = await fetch(`http://localhost:8080/api/usuario/firebase/${fbUser.uid}`);
+          if (!response.ok) {
+            const errorData = await response.text();
+            throw new Error(`Falha ao buscar dados do usuário no backend: ${response.status} - ${errorData}`);
+          }
           const userData: AppUser = await response.json();
-          setCurrentUser(userData); // ✅ Agora contém id, nome, email, etc.
+          setCurrentUser(userData);
         } catch (e) {
-          setError('Erro ao buscar usuário');
+          setError('Erro ao buscar usuário do backend.');
+          setCurrentUser(null);
         }
       } else {
         setCurrentUser(null);
       }
       setLoading(false);
     });
-
-    return unsubscribe;
+    return () => unsubscribe();
   }, []);
 
   const logout = async () => {
-    await signOut(auth);
-    setCurrentUser(null);
+    try {
+      await signOut(auth);
+      setCurrentUser(null);
+      setFirebaseUser(null);
+    } catch (e) {
+      setError('Erro ao sair da conta.');
+    }
   };
 
-  return { currentUser, loading, error, logout };
+  return { currentUser, firebaseUser, loading, error, logout };
 };

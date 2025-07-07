@@ -4,4 +4,6 @@ export type User = {
   fullName: string;
   email: string;
   firebaseUid: string;
+   photoURL?: string | null;
+    displayName?: string;
 };
