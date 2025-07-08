@@ -1,7 +1,7 @@
 // src/Pages/Endereco.tsx
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom'; // Adicionado useLocation
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import { useAuth } from '../hooks/useAuth';
 import { useCart } from '../contexts/CartContext';
@@ -21,10 +21,10 @@ const tiposEndereco = [
 ];
 
 const PaginaDetalhesEntrega: React.FC = () => {
-  const { currentUser, loading: carregandoAuth, error: authError } = useAuth(); // Captura o 'error' do useAuth
+  const { currentUser, firebaseUser, loading: carregandoAuth, error: authError } = useAuth(); // Get firebaseUser
   const { cartCount } = useCart();
   const navigate = useNavigate();
-  const location = useLocation(); // Adicionado para consistência, embora não usado diretamente aqui
+  const location = useLocation();
 
   const [carregandoCEP, setCarregandoCEP] = useState(false);
 
@@ -39,25 +39,17 @@ const PaginaDetalhesEntrega: React.FC = () => {
   const [tipoEndereco, setTipoEndereco] = useState<string>(tiposEndereco[0].id);
   const [metodoEntregaSelecionado, setMetodoEntregaSelecionado] = useState<string>(opcoesEntrega[0].id);
 
-  // Redirecionamento se carrinho vazio (e se já autenticado)
   useEffect(() => {
-    // Se o loading da autenticação terminou, o usuário não existe E não houve um erro authError ainda (para não mostrar toast duplicado)
-    // Então, se o usuário não está autenticado, ele será redirecionado pelo botão 'Continuar para Pagamento'.
-    // Este useEffect foca em carrinho vazio ou erros de autenticação (se existirem).
     if (!carregandoAuth && currentUser && cartCount === 0) {
       toast.info("Seu carrinho está vazio. Adicione produtos para continuar.");
       navigate('/cart');
     }
 
-    // Exibe erros de autenticação que podem ter vindo do useAuth
-    if (!carregandoAuth && authError) { // Exibe o erro apenas quando o carregamento terminar
+    if (!carregandoAuth && authError) {
       toast.error(`Erro de autenticação: ${authError}. Por favor, tente novamente ou faça login.`);
-      // Opcional: Se o erro for crítico e o usuário não estiver logado, redirecionar para login.
-      // if (!currentUser) { navigate('/login'); }
     }
-  }, [currentUser, carregandoAuth, navigate, cartCount, authError]); // Adicione authError nas dependências
+  }, [currentUser, carregandoAuth, navigate, cartCount, authError]);
 
-  // Buscar endereço via CEP
   useEffect(() => {
     const cepLimpo = cep.replace(/\D/g, '');
 
@@ -92,7 +84,6 @@ const PaginaDetalhesEntrega: React.FC = () => {
   const continuarParaPagamento = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Verificação de autenticação no clique do botão
     if (carregandoAuth) {
       toast.warn("Aguarde a verificação do seu status de login.");
       return;
@@ -102,11 +93,10 @@ const PaginaDetalhesEntrega: React.FC = () => {
       navigate('/login');
       return;
     }
-    if (authError) { // Não permite continuar se há um erro de autenticação pendente
+    if (authError) {
       toast.error(`Não é possível continuar devido a um erro de autenticação: ${authError}`);
       return;
     }
-
 
     if (cep.replace(/\D/g, '').length !== 8) {
       toast.error("Por favor, insira um CEP válido com 8 dígitos.");
@@ -133,6 +123,8 @@ const PaginaDetalhesEntrega: React.FC = () => {
       estado,
       tipo: tipoEndereco,
       metodoEntrega: metodoEntregaSelecionado,
+      userId: currentUser?.id, // Pass the backend user ID
+      firebaseUid: firebaseUser?.uid // Pass the Firebase UID
     };
 
     try {
@@ -164,7 +156,6 @@ const PaginaDetalhesEntrega: React.FC = () => {
     }
   };
 
-  // --- BLOCO DE CARREGAMENTO PARA INFORMAÇÕES DE AUTENTICAÇÃO ---
   if (carregandoAuth) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#1A002F] text-white">
@@ -172,7 +163,6 @@ const PaginaDetalhesEntrega: React.FC = () => {
       </div>
     );
   }
-  // --- FIM DO BLOCO DE CARREGAMENTO ---
 
   return (
     <div className="bg-[#1A002F] text-white min-h-screen p-4 sm:p-6 lg:p-8 relative overflow-hidden">
@@ -264,90 +254,90 @@ const PaginaDetalhesEntrega: React.FC = () => {
                 Bairro:
               </label>
               <input
-                type="text"
-                id="bairro"
-                className="w-full p-3 rounded-md bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                value={bairro}
-                onChange={(e) => setBairro(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex-1">
-                <label htmlFor="cidade" className="block text-gray-300 text-sm font-bold mb-2">
-                  Cidade:
-                </label>
-                <input
                   type="text"
-                  id="cidade"
+                  id="bairro"
                   className="w-full p-3 rounded-md bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                  value={cidade}
-                  onChange={(e) => setCidade(e.target.value)}
+                  value={bairro}
+                  onChange={(e) => setBairro(e.target.value)}
                   required
                 />
               </div>
-              <div className="w-full sm:w-24">
-                <label htmlFor="estado" className="block text-gray-300 text-sm font-bold mb-2">
-                  Estado:
+
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1">
+                  <label htmlFor="cidade" className="block text-gray-300 text-sm font-bold mb-2">
+                    Cidade:
+                  </label>
+                  <input
+                    type="text"
+                    id="cidade"
+                    className="w-full p-3 rounded-md bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    value={cidade}
+                    onChange={(e) => setCidade(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="w-full sm:w-24">
+                  <label htmlFor="estado" className="block text-gray-300 text-sm font-bold mb-2">
+                    Estado:
+                  </label>
+                  <input
+                    type="text"
+                    id="estado"
+                    className="w-full p-3 rounded-md bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    value={estado}
+                    onChange={(e) => setEstado(e.target.value.toUpperCase())}
+                    maxLength={2}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="tipoEndereco" className="block text-gray-300 text-sm font-bold mb-2">
+                  Tipo de Endereço:
                 </label>
-                <input
-                  type="text"
-                  id="estado"
-                  className="w-full p-3 rounded-md bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                  value={estado}
-                  onChange={(e) => setEstado(e.target.value.toUpperCase())}
-                  maxLength={2}
+                <select
+                  id="tipoEndereco"
+                  className="w-full p-3 rounded-md bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  value={tipoEndereco}
+                  onChange={(e) => setTipoEndereco(e.target.value)}
                   required
-                />
+                >
+                  {tiposEndereco.map(tipo => (
+                    <option key={tipo.id} value={tipo.id}>{tipo.name}</option>
+                  ))}
+                </select>
               </div>
             </div>
 
-            <div>
-              <label htmlFor="tipoEndereco" className="block text-gray-300 text-sm font-bold mb-2">
-                Tipo de Endereço:
-              </label>
+            <div className="mt-6">
+              <h3 className="text-xl font-bold text-gray-300">Forma de Entrega:</h3>
               <select
-                id="tipoEndereco"
+                id="metodoEntrega"
                 className="w-full p-3 rounded-md bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-                value={tipoEndereco}
-                onChange={(e) => setTipoEndereco(e.target.value)}
+                value={metodoEntregaSelecionado}
+                onChange={(e) => setMetodoEntregaSelecionado(e.target.value)}
                 required
               >
-                {tiposEndereco.map(tipo => (
-                  <option key={tipo.id} value={tipo.id}>{tipo.name}</option>
+                {opcoesEntrega.map(opcao => (
+                  <option key={opcao.id} value={opcao.id}>
+                    {opcao.name} (R${opcao.price.toFixed(2)}) - {opcao.estimatedTime}
+                  </option>
                 ))}
               </select>
             </div>
-          </div>
 
-          <div className="mt-6">
-            <h3 className="text-xl font-bold text-gray-300">Forma de Entrega:</h3>
-            <select
-              id="metodoEntrega"
-              className="w-full p-3 rounded-md bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-              value={metodoEntregaSelecionado}
-              onChange={(e) => setMetodoEntregaSelecionado(e.target.value)}
-              required
+            <button
+              type="submit"
+              className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 rounded-lg transition-colors mt-6"
             >
-              {opcoesEntrega.map(opcao => (
-                <option key={opcao.id} value={opcao.id}>
-                  {opcao.name} (R${opcao.price.toFixed(2)}) - {opcao.estimatedTime}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <button
-            type="submit"
-            className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 rounded-lg transition-colors mt-6"
-          >
-            Continuar para o Pagamento
-          </button>
-        </form>
+              Continuar para o Pagamento
+            </button>
+          </form>
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  };
 
-export default PaginaDetalhesEntrega;
+  export default PaginaDetalhesEntrega;

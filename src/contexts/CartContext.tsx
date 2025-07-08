@@ -8,8 +8,7 @@ import React, {
   useEffect,
   ReactNode,
 } from 'react';
-
-// --- TIPAGENS ---
+import { useAuth } from '../hooks/useAuth'; // IMPORTANTE
 
 type Product = {
   id: number;
@@ -40,8 +39,6 @@ export type CartContextType = {
   setCartId: (id: number | null) => void;
 };
 
-// --- CONTEXTO ---
-
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const useCart = () => {
@@ -53,11 +50,11 @@ export const useCart = () => {
 };
 
 const STORAGE_KEY = 'cartItems';
-const CART_ID_STORAGE_KEY = 'cartId'; // Definir uma chave para o cartId no localStorage
-
-// --- PROVIDER ---
+const CART_ID_STORAGE_KEY = 'cartId';
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
+  const { currentUser } = useAuth(); // 🔥 Pega o usuário autenticado
+
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -66,34 +63,53 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     return [];
   });
 
-  // Modificação: Inicializar cartId do localStorage
   const [cartId, setCartId] = useState<number | null>(() => {
     if (typeof window !== 'undefined') {
       const savedCartId = localStorage.getItem(CART_ID_STORAGE_KEY);
-      // Converter para número, se existir, caso contrário null
       return savedCartId ? parseInt(savedCartId, 10) : null;
     }
     return null;
   });
 
+  // Salvar itens e ID no localStorage
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(cartItems));
   }, [cartItems]);
 
-  // Novo useEffect: Persistir o cartId no localStorage sempre que ele mudar
   useEffect(() => {
     if (cartId !== null) {
       localStorage.setItem(CART_ID_STORAGE_KEY, cartId.toString());
     } else {
-      localStorage.removeItem(CART_ID_STORAGE_KEY); // Remover se o carrinho for limpo ou não houver ID
+      localStorage.removeItem(CART_ID_STORAGE_KEY);
     }
   }, [cartId]);
 
+  // 🔥 NOVO: Buscar carrinho do backend pelo userId
+  useEffect(() => {
+    const fetchCartFromBackend = async () => {
+      if (!currentUser?.id) return;
+
+      try {
+        const res = await fetch(`http://localhost:8080/api/carrinho/usuario/${currentUser.id}`);
+        if (!res.ok) throw new Error(`Erro ao buscar carrinho: ${res.status}`);
+        const backendCart = await res.json();
+
+        setCartId(backendCart.id);
+        console.log("🛒 Carrinho carregado do backend:", backendCart);
+
+        // Se quiser, você pode também atualizar os itens do carrinho com base no backend:
+        // setCartItems(backendCart.itens);
+      } catch (err) {
+        console.error('❌ Erro ao carregar carrinho do backend:', err);
+      }
+    };
+
+    fetchCartFromBackend();
+  }, [currentUser]);
 
   const addToCart = useCallback((product: Product) => {
     setCartItems((prevItems) => {
       const existingItem = prevItems.find(item => item.productId === product.id);
-
       if (existingItem) {
         return prevItems.map(item =>
           item.productId === product.id
@@ -101,7 +117,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             : item
         );
       }
-
       return [
         ...prevItems,
         {
@@ -136,7 +151,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const clearCart = useCallback(() => {
     setCartItems([]);
-    setCartId(null); // Limpar o cartId no contexto também
+    setCartId(null);
   }, []);
 
   const isInCart = useCallback(
@@ -190,7 +205,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     isInCart,
     changeCartItemQuantity,
     cartId,
-    setCartId, // Tornar setCartId disponível no contexto
+    setCartId,
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

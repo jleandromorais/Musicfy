@@ -1,9 +1,9 @@
 // src/Pages/CheckoutPage.tsx
-
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 import { ToastContainer, toast } from 'react-toastify';
+import { useAuth } from '../hooks/useAuth';
 
 const opcoesEntrega = [
   { id: 'padrao', name: 'Envio Padrão', price: 15.00, estimatedTime: '5-7 dias úteis' },
@@ -13,6 +13,7 @@ const opcoesEntrega = [
 
 const CheckoutPage: React.FC = () => {
   const { cartId, cartItems, totalPrice } = useCart();
+  const { currentUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -20,23 +21,66 @@ const CheckoutPage: React.FC = () => {
 
   const selectedDeliveryOption = opcoesEntrega.find(
     opt => opt.id === (detalhesEntrega?.metodoEntrega || 'padrao')
-  );
+  ) || opcoesEntrega[0];
 
-  const shippingCost = selectedDeliveryOption?.price ?? 0;
+  const shippingCost = selectedDeliveryOption.price;
   const grandTotal = totalPrice + shippingCost;
 
-  // Removei a verificação de autenticação e redirecionamentos
+  // Exibe mensagem se usuário não estiver logado
+  if (!currentUser) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#1A002F] text-white">
+        <ToastContainer position="bottom-right" />
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-4">Você precisa estar logado para finalizar a compra.</h2>
+          <button
+            className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-6 rounded-lg transition-colors"
+            onClick={() => navigate('/login')}
+          >
+            Ir para Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Exibe mensagem se carrinho estiver vazio ou indefinido
+  if (!cartId || cartItems.length === 0) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#1A002F] text-white">
+        <ToastContainer position="bottom-right" />
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-4">Seu carrinho está vazio.</h2>
+          <button
+            className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-6 rounded-lg transition-colors"
+            onClick={() => navigate('/')}
+          >
+            Voltar para a loja
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const handleFinalizeOrder = async () => {
-    // Aqui só um aviso simples caso dados estejam faltando
-    if (!cartId || !detalhesEntrega?.enderecoId || cartItems.length === 0) {
-      toast.error('Dados insuficientes para finalizar o pedido. Verifique seu carrinho e endereço.');
+    // Log the currentUser object and its ID for debugging
+    console.log('Current User:', currentUser);
+    console.log('Current User ID:', currentUser?.id);
+
+    const missing = [];
+    if (!cartId) missing.push('Carrinho');
+    // Explicitly check for currentUser.id
+    if (!currentUser?.id) missing.push('Usuário');
+    if (!detalhesEntrega?.enderecoId) missing.push('Endereço');
+
+    if (missing.length > 0) {
+      toast.error(`Faltando: ${missing.join(', ')}`);
       return;
     }
 
     const payload = {
       cartId: cartId,
-      userId: detalhesEntrega?.userId ?? null, // Você pode ajustar isso conforme seu fluxo
+      userId: currentUser.id,
       enderecoId: detalhesEntrega.enderecoId,
       items: cartItems.map((item) => ({
         nomeProduto: item.name,
@@ -81,11 +125,9 @@ const CheckoutPage: React.FC = () => {
         </h1>
 
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Seção de Resumo do Pedido */}
           <div className="lg:w-2/3 bg-gray-800 rounded-lg shadow-xl p-6">
             <h2 className="text-2xl font-bold mb-4">Resumo do Pedido</h2>
             
-            {/* Itens */}
             {cartItems.map((item) => (
               <div key={item.productId} className="flex justify-between items-center border-b border-gray-700 py-3">
                 <div className="flex items-center gap-4">
@@ -99,7 +141,6 @@ const CheckoutPage: React.FC = () => {
               </div>
             ))}
             
-            {/* Cálculos de Custo */}
             <div className="mt-6 space-y-2 border-t border-gray-700 pt-4">
               <div className="flex justify-between text-gray-300">
                 <span>Subtotal dos produtos:</span>
@@ -114,14 +155,12 @@ const CheckoutPage: React.FC = () => {
               </p>
             </div>
 
-            {/* Total Final */}
             <div className="mt-4 flex justify-between items-center text-xl font-bold border-t border-orange-500 pt-4">
               <span>Total a pagar:</span>
               <span className="text-orange-500">R$ {grandTotal.toFixed(2)}</span>
             </div>
           </div>
 
-          {/* Seção de Pagamento */}
           <div className="lg:w-1/3 bg-gray-800 rounded-lg shadow-xl p-6 flex flex-col justify-center">
             <h2 className="text-2xl font-bold mb-4 text-center">Forma de Pagamento</h2>
             <p className="text-gray-400 text-center mb-6">
