@@ -77,16 +77,21 @@ const CheckoutPage: React.FC = () => {
     }
 
     const payload = {
-      // Corrected: Use 'cartId' here
-      cartId: cartId,
-      userId: currentUser.id,
-      enderecoId: detalhesEntrega.enderecoId,
-      items: cartItems.map((item) => ({
-        nomeProduto: item.name,
-        precoUnitario: item.price,
-        quantidade: item.quantity,
-      })),
-    };
+  cartId,
+  userId: currentUser.id,
+  enderecoId: detalhesEntrega.enderecoId,
+  items: cartItems.map((item) => ({
+    nomeProduto: item.name,
+    precoUnitario: item.price,
+    quantidade: item.quantity,
+  })),
+  metadata: {
+    userId: currentUser.id.toString(),
+    cartId: cartId.toString(),
+    enderecoId: detalhesEntrega.enderecoId.toString(),
+  }
+};
+
 
     try {
       const response = await fetch('http://localhost:8080/api/checkout/create-session', {
