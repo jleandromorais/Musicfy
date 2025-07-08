@@ -14,17 +14,36 @@ export const useAuth = () => {
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       setFirebaseUser(fbUser);
       setError(null);
+      setLoading(true);
 
       if (fbUser) {
         try {
-          // 1. Tenta buscar o usuário no backend
-          let buscarResponse = await fetch(`http://localhost:8080/api/usuario/firebase/${fbUser.uid}`);
+          // Obtenha o ID Token do Firebase User
+          const idToken = await fbUser.getIdToken(); 
+          console.log('[useAuth] Firebase ID Token obtido:', idToken); // Apenas para depuração
 
-          // 2. Se não existir (404), cria o usuário
-          if (buscarResponse.status === 404) {
+          let backendUser: AppUser | null = null;
+
+          // 1. Tentar buscar usuário no backend usando o Firebase UID
+          let buscarResponse = await fetch(`http://localhost:8080/api/usuario/firebase/${fbUser.uid}`, {
+            headers: {
+              'Authorization': `Bearer ${idToken}`, // Adicione o ID Token aqui
+              'Content-Type': 'application/json' // Garanta este header para JSON requests
+            }
+          });
+          
+          if (buscarResponse.ok) {
+            backendUser = await buscarResponse.json();
+            console.log('[useAuth] Usuário encontrado no backend:', backendUser);
+          } else if (buscarResponse.status === 404) {
+            console.log('[useAuth] Usuário não encontrado no backend, tentando criar...');
+            // 2. Se o usuário não existir (404), tenta criá-lo no backend
             const criarResponse = await fetch('http://localhost:8080/api/usuario/criar', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: {
+                'Authorization': `Bearer ${idToken}`, // Adicione o ID Token aqui também
+                'Content-Type': 'application/json'
+              },
               body: JSON.stringify({
                 firebaseUid: fbUser.uid,
                 fullName: fbUser.displayName ?? 'Usuário',
@@ -33,31 +52,50 @@ export const useAuth = () => {
             });
 
             if (!criarResponse.ok) {
-              throw new Error(`Erro ao criar usuário: ${await criarResponse.text()}`);
+              const errorText = await criarResponse.text();
+              throw new Error(`Erro ao criar usuário no backend: ${errorText}`);
             }
 
-            // Rebuscar após criar
-            buscarResponse = await fetch(`http://localhost:8080/api/usuario/firebase/${fbUser.uid}`);
-            if (!buscarResponse.ok) {
-              throw new Error(`Erro ao buscar usuário depois de criar: ${await buscarResponse.text()}`);
+            backendUser = await criarResponse.json();
+            console.log('[useAuth] Usuário criado no backend:', backendUser);
+
+            // Caso o backend de 'criar' não retorne o ID, fazemos outra busca
+            if (!backendUser || backendUser.id === undefined || backendUser.id === null) {
+              console.warn('[useAuth] Usuário criado não retornou ID, re-buscando...');
+              const rebuscarResponse = await fetch(`http://localhost:8080/api/usuario/firebase/${fbUser.uid}`, {
+                headers: {
+                  'Authorization': `Bearer ${idToken}`, // Adicione o ID Token na re-busca
+                  'Content-Type': 'application/json'
+                }
+              });
+              if (!rebuscarResponse.ok) {
+                throw new Error(`Erro ao re-buscar usuário depois de criar: ${await rebuscarResponse.text()}`);
+              }
+              backendUser = await rebuscarResponse.json();
+              console.log('[useAuth] Usuário re-buscado (fallback):', backendUser);
             }
+
+          } else {
+            throw new Error(`Erro ao buscar usuário no backend (HTTP ${buscarResponse.status}): ${await buscarResponse.text()}`);
           }
 
-          // 3. Definir usuário no estado
-          const userData: AppUser = await buscarResponse.json();
-          setCurrentUser(userData);
+          if (backendUser && backendUser.id !== undefined && backendUser.id !== null) {
+            setCurrentUser(backendUser);
+          } else {
+            console.error('[useAuth] Usuário do backend não possui ID válido:', backendUser);
+            throw new Error('Dados do usuário incompletos: ID não fornecido pelo backend.');
+          }
 
         } catch (e) {
           const errorMessage =
             e instanceof Error ? e.message : 'Erro desconhecido ao autenticar usuário.';
-          console.error('[useAuth] erro:', errorMessage);
+          console.error('[useAuth] Erro no fluxo de autenticação/backend:', errorMessage);
           setError(errorMessage);
           setCurrentUser(null);
         }
       } else {
         setCurrentUser(null);
       }
-
       setLoading(false);
     });
 

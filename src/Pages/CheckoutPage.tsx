@@ -12,6 +12,7 @@ const opcoesEntrega = [
 ];
 
 const CheckoutPage: React.FC = () => {
+  // Corrected: Destructure 'cartId' instead of 'cart'
   const { cartId, cartItems, totalPrice } = useCart();
   const { currentUser } = useAuth();
   const navigate = useNavigate();
@@ -45,6 +46,7 @@ const CheckoutPage: React.FC = () => {
   }
 
   // Exibe mensagem se carrinho estiver vazio ou indefinido
+  // Corrected: Check 'cartId' directly as it's the identifier for the cart
   if (!cartId || cartItems.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#1A002F] text-white">
@@ -63,13 +65,9 @@ const CheckoutPage: React.FC = () => {
   }
 
   const handleFinalizeOrder = async () => {
-    // Log the currentUser object and its ID for debugging
-    console.log('Current User:', currentUser);
-    console.log('Current User ID:', currentUser?.id);
-
     const missing = [];
+    // Corrected: Use 'cartId' here
     if (!cartId) missing.push('Carrinho');
-    // Explicitly check for currentUser.id
     if (!currentUser?.id) missing.push('Usuário');
     if (!detalhesEntrega?.enderecoId) missing.push('Endereço');
 
@@ -79,6 +77,7 @@ const CheckoutPage: React.FC = () => {
     }
 
     const payload = {
+      // Corrected: Use 'cartId' here
       cartId: cartId,
       userId: currentUser.id,
       enderecoId: detalhesEntrega.enderecoId,
