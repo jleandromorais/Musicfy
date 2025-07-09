@@ -1,13 +1,29 @@
-// src/Pages/OrdersPage.tsx
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { FaArrowLeft, FaBoxOpen, FaShoppingBag, FaCalendarAlt } from 'react-icons/fa';
 import DeliveryStatus from '../components/DeliveryStatus';
 import { calculateEstimatedDelivery } from '../services/dateService';
 
-// O tipo do pedido permanece o mesmo
+// Tipos vindos do backend
+type OrderItemDTO = {
+  productId: number;
+  productName: string;
+  productImgPath: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+};
+
+type OrderDTO = {
+  id: number;
+  orderDate: string;
+  totalPrice: number;
+  status: 'PENDING' | 'PROCESSING' | 'SHIPPED' | 'OUT_FOR_DELIVERY' | 'DELIVERED' | 'CANCELLED' | 'REFUNDED';
+  items: OrderItemDTO[];
+};
+
+// Tipo do frontend
 type Order = {
   id: string;
   date: string;
@@ -18,6 +34,7 @@ type Order = {
   };
   items: Array<{
     name: string;
+    image: string;
     quantity: number;
     price: number;
   }>;
@@ -28,53 +45,86 @@ type Order = {
   };
 };
 
+const mapOrderStatus = (status: OrderDTO['status']): string => {
+  const statusMap = {
+    PENDING: 'Pedido recebido',
+    PROCESSING: 'Em separação',
+    SHIPPED: 'Enviado',
+    OUT_FOR_DELIVERY: 'Saiu para entrega',
+    DELIVERED: 'Entregue',
+    CANCELLED: 'Cancelado',
+    REFUNDED: 'Reembolsado',
+  };
+  return statusMap[status] || 'Status desconhecido';
+};
+
 const OrdersPage: React.FC = () => {
   const { currentUser, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchOrders = useCallback(async () => {
+    if (!currentUser) return;
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch(`http://localhost:8080/api/orders/user/${currentUser.firebaseUid}`);
+      if (!response.ok) {
+        throw new Error(`Erro ao buscar pedidos: ${response.statusText}`);
+      }
+
+      const data: OrderDTO[] = await response.json();
+
+      const mappedOrders: Order[] = data.map(orderDto => ({
+        id: orderDto.id.toString(),
+        date: orderDto.orderDate,
+        totalPrice: orderDto.totalPrice,
+        deliveryStatus: mapOrderStatus(orderDto.status),
+        items: orderDto.items.map(item => ({
+          name: item.productName,
+          image: item.productImgPath,
+          quantity: item.quantity,
+          price: item.unitPrice,
+        })),
+        shipping: {
+          name: 'Frete Padrão',
+          estimatedTime: '5-7 dias',
+        },
+        deliveryPerson: {
+          name: 'Carlos Estevão',
+          avatar: `https://i.pravatar.cc/150?u=${orderDto.id}`,
+        },
+      }));
+
+      setOrders(mappedOrders);
+    } catch (err: any) {
+      console.error("Falha ao buscar pedidos:", err);
+      setError("Não foi possível carregar seus pedidos. Tente novamente mais tarde.");
+    } finally {
+      setLoading(false);
+    }
+  }, [currentUser]);
 
   useEffect(() => {
-    if (!authLoading && !currentUser) {
-      navigate('/login');
-      return;
+    if (!authLoading) {
+      if (!currentUser) {
+        navigate('/login');
+      } else {
+        fetchOrders();
+      }
     }
+  }, [currentUser, authLoading, navigate, fetchOrders]);
 
-    const storedOrdersString = localStorage.getItem('allOrders');
-    if (storedOrdersString) {
-      const allStoredOrders = JSON.parse(storedOrdersString);
-      const userOrders = allStoredOrders.filter((order: any) => order.userId === currentUser?.uid);
+  if (authLoading || loading) {
+    return <div className="min-h-screen flex items-center justify-center bg-[#1A002F] text-white">Carregando seus pedidos...</div>;
+  }
 
-      // 1. Lógica para calcular o status dinamicamente
-      const ordersWithDynamicStatus = userOrders.map((order: any) => {
-        const statuses = ['Pedido recebido', 'Em separação', 'Saiu para entrega', 'A caminho', 'Entregue'];
-        const orderDate = new Date(order.date);
-        const today = new Date();
-        
-        // Calcula a diferença de dias entre a data do pedido e hoje
-        const diffTime = Math.abs(today.getTime() - orderDate.getTime());
-        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-        // Define o status com base nos dias que passaram
-        // Garante que o índice não ultrapasse o tamanho da lista de status
-        const statusIndex = Math.min(diffDays, statuses.length - 1);
-        const currentStatus = statuses[statusIndex];
-        
-        return {
-          ...order,
-          deliveryStatus: currentStatus, 
-          deliveryPerson: {
-            name: 'Carlos Estevão',
-            avatar: `https://i.pravatar.cc/150?u=${order.id}`,
-          },
-        };
-      });
-      
-      setOrders(ordersWithDynamicStatus);
-    }
-  }, [currentUser, authLoading, navigate]);
-
-  if (authLoading) {
-    return <div className="min-h-screen flex items-center justify-center bg-[#1A002F] text-white">Carregando...</div>;
+  if (error) {
+    return <div className="min-h-screen flex items-center justify-center bg-[#1A002F] text-red-400">{error}</div>;
   }
 
   return (
@@ -82,9 +132,8 @@ const OrdersPage: React.FC = () => {
       <div className="absolute top-1/2 left-1/2 w-[1000px] h-[1000px] rounded-full bg-[#35589A] opacity-15 filter blur-3xl transform -translate-x-1/2 -translate-y-1/2 z-0"></div>
 
       <div className="relative z-10 max-w-4xl mx-auto">
-        
-        <Link 
-          to="/" 
+        <Link
+          to="/"
           className="inline-flex items-center gap-2 text-orange-500 hover:text-orange-400 transition-colors mb-6 font-semibold w-fit"
         >
           <FaArrowLeft />
@@ -102,49 +151,53 @@ const OrdersPage: React.FC = () => {
           </div>
         ) : (
           <div className="space-y-6">
-            {orders.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((order) => {
-              const estimatedDelivery = order.shipping.estimatedTime 
-                ? calculateEstimatedDelivery(order.date, order.shipping.estimatedTime) 
-                : 'A ser definido';
-              
-              return (
-                <div key={order.id} className="bg-gray-800 rounded-lg shadow-xl p-6">
-                  {/* ... (código dos detalhes do pedido) ... */}
-                  <div className="flex flex-wrap justify-between items-center border-b border-gray-700 pb-3 mb-3 gap-2">
-                    <div>
-                      <h2 className="text-lg font-bold">Pedido #{order.id.replace('order_', '')}</h2>
-                      <p className="text-sm text-gray-400">Data: {new Date(order.date).toLocaleDateString()}</p>
+            {orders
+              .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+              .map(order => {
+                const estimatedDelivery = order.shipping.estimatedTime
+                  ? calculateEstimatedDelivery(order.date, order.shipping.estimatedTime)
+                  : 'A ser definido';
+
+                return (
+                  <div key={order.id} className="bg-gray-800 rounded-lg shadow-xl p-6">
+                    <div className="flex flex-wrap justify-between items-center border-b border-gray-700 pb-3 mb-3 gap-2">
+                      <div>
+                        <h2 className="text-lg font-bold">Pedido #{order.id}</h2>
+                        <p className="text-sm text-gray-400">
+                          Data: {new Date(order.date).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="text-xl font-bold text-orange-400">
+                        R$ {order.totalPrice.toFixed(2)}
+                      </div>
                     </div>
-                    <div className="text-xl font-bold text-orange-400">
-                      R$ {order.totalPrice.toFixed(2)}
-                    </div>
-                  </div>
-                  
-                  {/* ... (código dos itens) ... */}
-                   <div className="space-y-2">
+
+                    <div className="space-y-2">
                       {order.items.map((item, index) => (
                         <div key={index} className="flex justify-between text-gray-300">
-                          <span>{item.quantity}x {item.name}</span>
+                          <span>
+                            {item.quantity}x {item.name}
+                          </span>
                           <span>R$ {(item.price * item.quantity).toFixed(2)}</span>
                         </div>
                       ))}
                       <div className="flex justify-between text-gray-400 text-sm pt-2 border-t border-gray-700/50 mt-2">
-                          <span>Frete: {order.shipping?.name}</span>
+                        <span>Frete: {order.shipping?.name}</span>
                       </div>
-                  </div>
+                    </div>
 
-                  <div className="flex items-center gap-2 text-green-400 text-sm mt-4 font-semibold">
+                    <div className="flex items-center gap-2 text-green-400 text-sm mt-4 font-semibold">
                       <FaCalendarAlt />
                       <span>{estimatedDelivery}</span>
-                  </div>
+                    </div>
 
-                  <DeliveryStatus 
-                    currentStatus={order.deliveryStatus} 
-                    deliveryPerson={order.deliveryPerson}
-                  />
-                </div>
-              );
-            })}
+                    <DeliveryStatus
+                      currentStatus={order.deliveryStatus}
+                      deliveryPerson={order.deliveryPerson}
+                    />
+                  </div>
+                );
+              })}
           </div>
         )}
       </div>
