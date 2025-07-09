@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import { FaArrowLeft, FaBoxOpen, FaShoppingBag, FaCalendarAlt } from 'react-icons/fa';
 import DeliveryStatus from '../components/DeliveryStatus';
 import { calculateEstimatedDelivery } from '../services/dateService';
+import { toast } from 'react-toastify';
 
 // Tipos vindos do backend
 type OrderItemDTO = {
@@ -119,6 +120,31 @@ const OrdersPage: React.FC = () => {
     }
   }, [currentUser, authLoading, navigate, fetchOrders]);
 
+  // Função para cancelar pedido
+  const handleCancelOrder = async (orderId: string) => {
+    if (!window.confirm("Tem certeza que deseja cancelar este pedido?")) return;
+
+    try {
+      const response = await fetch(`http://localhost:8080/api/orders/${orderId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'CANCELLED' }),
+      });
+
+      if (response.ok) {
+        // Remove o pedido cancelado da lista localmente
+        setOrders(prevOrders => prevOrders.filter(o => o.id !== orderId));
+        toast.success('Pedido cancelado com sucesso!');
+      } else {
+        const errorData = await response.json();
+        toast.error(`Erro ao cancelar pedido: ${errorData.message || 'Erro desconhecido'}`);
+      }
+    } catch (err) {
+      toast.error('Erro ao cancelar pedido. Tente novamente mais tarde.');
+      console.error(err);
+    }
+  };
+
   if (authLoading || loading) {
     return <div className="min-h-screen flex items-center justify-center bg-[#1A002F] text-white">Carregando seus pedidos...</div>;
   }
@@ -190,6 +216,16 @@ const OrdersPage: React.FC = () => {
                       <FaCalendarAlt />
                       <span>{estimatedDelivery}</span>
                     </div>
+
+                    {/* Botão Cancelar Pedido */}
+                    {order.deliveryStatus !== 'Cancelado' && order.deliveryStatus !== 'Entregue' && (
+                      <button
+                        onClick={() => handleCancelOrder(order.id)}
+                        className="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded"
+                      >
+                        Cancelar Pedido
+                      </button>
+                    )}
 
                     <DeliveryStatus
                       currentStatus={order.deliveryStatus}

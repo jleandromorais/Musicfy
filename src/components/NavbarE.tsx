@@ -1,7 +1,7 @@
 // src/components/NavbarE.tsx
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch, faShoppingCart, faSignOutAlt, faBoxOpen, faUser } from '@fortawesome/free-solid-svg-icons';
+import {  faShoppingCart, faSignOutAlt, faUser } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 

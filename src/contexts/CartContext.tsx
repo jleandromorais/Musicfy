@@ -1,15 +1,17 @@
 // src/contexts/CartContext.tsx
-import React, {
+import {
   createContext,
   useState,
   useContext,
   useCallback,
   useMemo,
   useEffect,
-  ReactNode,
 } from 'react';
+import type { ReactNode } from 'react';
+
 import { useAuth } from '../hooks/useAuth'; // IMPORTANTE
 
+// Tipo do produto básico
 type Product = {
   id: number;
   name: string;
@@ -17,14 +19,16 @@ type Product = {
   img: string;
 };
 
+// Tipo do item do carrinho, que inclui quantity
 export type CartItem = {
   productId: number;
   name: string;
   price: number;
   img: string;
-  quantity: number;
+  quantity: number; // O campo que estava faltando
 };
 
+// Contexto do carrinho e funções que ele oferece
 export type CartContextType = {
   cartItems: CartItem[];
   addToCart: (product: Product) => void;
@@ -53,7 +57,7 @@ const STORAGE_KEY = 'cartItems';
 const CART_ID_STORAGE_KEY = 'cartId';
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
-  const { currentUser } = useAuth(); // 🔥 Pega o usuário autenticado
+  const { currentUser } = useAuth(); // Pega usuário autenticado
 
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
     if (typeof window !== 'undefined') {
@@ -71,11 +75,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     return null;
   });
 
-  // Salvar itens e ID no localStorage
+  // Salva os itens do carrinho no localStorage
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(cartItems));
   }, [cartItems]);
 
+  // Salva o ID do carrinho no localStorage
   useEffect(() => {
     if (cartId !== null) {
       localStorage.setItem(CART_ID_STORAGE_KEY, cartId.toString());
@@ -84,7 +89,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [cartId]);
 
-  // 🔥 NOVO: Buscar carrinho do backend pelo userId
+  // Busca carrinho do backend pelo usuário autenticado
   useEffect(() => {
     const fetchCartFromBackend = async () => {
       if (!currentUser?.id) return;
@@ -97,7 +102,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         setCartId(backendCart.id);
         console.log("🛒 Carrinho carregado do backend:", backendCart);
 
-        // Se quiser, você pode também atualizar os itens do carrinho com base no backend:
+        // Opcional: atualizar itens do carrinho com os dados do backend
         // setCartItems(backendCart.itens);
       } catch (err) {
         console.error('❌ Erro ao carregar carrinho do backend:', err);
@@ -108,7 +113,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   }, [currentUser]);
 
   const addToCart = useCallback((product: Product) => {
-    setCartItems((prevItems) => {
+    setCartItems(prevItems => {
       const existingItem = prevItems.find(item => item.productId === product.id);
       if (existingItem) {
         return prevItems.map(item =>

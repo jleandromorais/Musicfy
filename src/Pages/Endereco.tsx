@@ -1,7 +1,7 @@
 // src/Pages/Endereco.tsx
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import { useAuth } from '../hooks/useAuth';
 import { useCart } from '../contexts/CartContext';
@@ -24,7 +24,6 @@ const PaginaDetalhesEntrega: React.FC = () => {
   const { currentUser, firebaseUser, loading: carregandoAuth, error: authError } = useAuth(); // Get firebaseUser
   const { cartCount } = useCart();
   const navigate = useNavigate();
-  const location = useLocation();
 
   const [carregandoCEP, setCarregandoCEP] = useState(false);
 

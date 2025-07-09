@@ -1,13 +1,17 @@
 // src/components/Product.tsx
-import React, { useRef } from 'react';
+import  { useRef } from 'react';
 import { FaShoppingCart, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import { useCart } from '../contexts/CartContext';
 import { ToastContainer, toast } from 'react-toastify';
+import { useCart } from '../contexts/CartContext';
+
 import 'react-toastify/dist/ReactToastify.css';
 import fhone from '../assets/imagens/photo.png';
 import ruido from '../assets/imagens/ruido.png';
 import headset from '../assets/imagens/gamer.png';
+import foneEsporivo from '../assets/imagens/fone-esportivo.png';
+import caixa from '../assets/imagens/59679_caixa-jbl-308p-mkii-monitor-de-estudio-ativo-pr-15707-28913048_s1_637734070885381143-removebg-preview.png'
+import infatil from '../assets/imagens/1449122-800-auto-removebg-preview.png';
 
 import { criarCarrinhoComItem, adicionarItemAoCarrinho } from '../services/cartApi';
 
@@ -27,51 +31,80 @@ const Produtos = () => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const adicionarAoCarrinho = async (produto: Produto) => {
-    try {
-      // Obtenha o cartId do localStorage. O CartContext também o lê, mas essa lógica
-      // aqui é para o fluxo de adição/criação.
-      let currentCartId = localStorage.getItem("cartId");
+  try {
+    let currentCartId = localStorage.getItem("cartId");
 
-      if (currentCartId) {
-        await adicionarItemAoCarrinho(currentCartId, {
-          productId: produto.id,
-          quantity: 1
-        });
-      } else {
-        const response = await criarCarrinhoComItem({
-          productId: produto.id,
-          quantity: 1
-        });
-
-        // Verifique se a resposta contém o ID do carrinho e use-o
-        currentCartId = response.cartId || response.cart?.id;
-        if (currentCartId) {
-          localStorage.setItem("cartId", currentCartId.toString());
-          // ATUALIZA O CONTEXTO AQUI: Garante que o cartId do contexto seja o mesmo do localStorage
-          setCartId(parseInt(currentCartId, 10));
-        }
-      }
-
-      addToCart({
-        id: produto.id,
-        name: produto.nome,
-        price: produto.preco,
-        img: produto.img,
+    if (currentCartId) {
+      await adicionarItemAoCarrinho(currentCartId, {
+        productId: produto.id,
+        quantity: 1
+      });
+    } else {
+      const response = await criarCarrinhoComItem({
+        productId: produto.id,
         quantity: 1
       });
 
-      toast.success(`${produto.nome} adicionado ao carrinho!`);
-    } catch (error) {
-      console.error("Erro ao adicionar ao carrinho:", error);
-      toast.error("Erro ao adicionar ao carrinho");
+      currentCartId = response.cartId || response.cart?.id;
+      if (currentCartId) {
+        localStorage.setItem("cartId", currentCartId.toString());
+        setCartId(parseInt(currentCartId, 10));
+      }
     }
-  };
 
-  const comprarAgora = (produto: Produto) => {
-    console.log(`Comprando agora: ${produto.nome}`);
-    toast.info(`Funcionalidade "Comprar agora" para ${produto.nome} não implementada.`);
-  };
+    // Aqui, passe somente as propriedades do produto (sem quantity)
+    addToCart({
+      id: produto.id,
+      name: produto.nome,
+      price: produto.preco,
+      img: produto.img,
+    });
 
+    toast.success(`${produto.nome} adicionado ao carrinho!`);
+  } catch (error) {
+    console.error("Erro ao adicionar ao carrinho:", error);
+    toast.error("Erro ao adicionar ao carrinho");
+  }
+};
+
+  const comprarAgora = async (produto: Produto) => {
+  try {
+    let currentCartId = localStorage.getItem("cartId");
+
+    if (currentCartId) {
+      await adicionarItemAoCarrinho(currentCartId, {
+        productId: produto.id,
+        quantity: 1
+      });
+    } else {
+      const response = await criarCarrinhoComItem({
+        productId: produto.id,
+        quantity: 1
+      });
+
+      currentCartId = response.cartId || response.cart?.id;
+      if (currentCartId) {
+        localStorage.setItem("cartId", currentCartId.toString());
+        setCartId(parseInt(currentCartId, 10));
+      }
+    }
+
+    addToCart({
+      id: produto.id,
+      name: produto.nome,
+      price: produto.preco,
+      img: produto.img,
+    });
+
+    toast.success(`${produto.nome} adicionado ao carrinho!`);
+
+    // Redireciona para o checkout após adicionar ao carrinho
+    navigate("/cart");
+  } catch (error) {
+    console.error("Erro ao comprar agora:", error);
+    toast.error("Erro ao comprar agora");
+  }
+};
   const produtos: Produto[] = [
     {
       id: 1,
@@ -114,7 +147,7 @@ const Produtos = () => {
     },
     {
       id: 4,
-      img: "/images/headphones-example.png",
+      img: foneEsporivo,
       nome: "Fones Esportivos",
       subtitulo: "ajuste seguro para vida ativa",
       caracteristicas: [
@@ -127,7 +160,7 @@ const Produtos = () => {
     },
     {
       id: 5,
-      img: "/images/headphones-example.png",
+      img: caixa,
       nome: "Monitores de Estúdio Pro",
       subtitulo: "áudio preciso para criadores",
       caracteristicas: [
@@ -140,7 +173,7 @@ const Produtos = () => {
     },
     {
       id: 6,
-      img: "/images/headphones-example.png",
+      img: infatil,
       nome: "Headset Infantil Seguro",
       subtitulo: "volume limitado para ouvidos jovens",
       caracteristicas: [

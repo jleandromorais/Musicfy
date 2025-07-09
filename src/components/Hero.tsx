@@ -1,5 +1,5 @@
 import React, {useEffect, memo} from 'react';
-import { FaShoppingCart, FaArrowDown } from 'react-icons/fa';
+import {  FaArrowDown } from 'react-icons/fa';
 
 import AOS from "aos";
 import "aos/dist/aos.css"; 

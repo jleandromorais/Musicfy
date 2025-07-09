@@ -1,5 +1,4 @@
     // src/Pages/Cart.tsx
-    import React from 'react';
     import { useCart, type CartItem } from '../contexts/CartContext';
     import { FaTrash, FaShoppingBag } from 'react-icons/fa';
     import { DeletarItem,incrementarQuantidade,decrementarQuantidade,LimparCarrinho} from '../services/cartApi';
@@ -148,30 +147,37 @@
                                     Total: <span className="text-orange-500">R$ {totalPrice.toFixed(2)}</span>
                                 </h3>
                                 <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-                                   <button
-                      onClick={async () => {
-                        try {
-                          if (!cartId) {
-                            toast.error("Carrinho não encontrado");
-                            return;
-                          }
-                          
-                          // Clear server cart
-                          await LimparCarrinho(cartId);
-                          
-                          // Clear local cart
-                          clearCart();
-                          
-                          toast.success("Carrinho limpo com sucesso");
-                        } catch (error) {
-                          console.error("Erro ao limpar carrinho:", error);
-                          toast.error(error instanceof Error ? error.message : "Erro ao limpar carrinho");
-                        }
-                      }}
-                      className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded-lg transition-colors w-full sm:w-auto"
-                    >
-                      Limpar Carrinho
-                    </button>
+                                 <button
+  onClick={async () => {
+    try {
+      if (!cartId) {
+        toast.error("Carrinho não encontrado");
+        return;
+      }
+
+      const cartIdNum = Number(cartId);
+      if (isNaN(cartIdNum)) {
+        toast.error("ID do carrinho inválido");
+        return;
+      }
+
+      // Limpa carrinho no backend
+      await LimparCarrinho(cartIdNum);
+
+      // Limpa carrinho local
+      clearCart();
+
+      toast.success("Carrinho limpo com sucesso");
+    } catch (error) {
+      console.error("Erro ao limpar carrinho:", error);
+      toast.error(error instanceof Error ? error.message : "Erro ao limpar carrinho");
+    }
+  }}
+  className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded-lg transition-colors w-full sm:w-auto"
+>
+  Limpar Carrinho
+</button>
+
                                     <button
                                      onClick={() => navigate('/delivery')} className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-6 rounded-lg transition-colors w-full sm:w-auto">
                                       Finalizar Compra

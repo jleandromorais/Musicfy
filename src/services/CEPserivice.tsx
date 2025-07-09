@@ -1,4 +1,14 @@
 // services/CEPservice.ts
+interface Endereco {
+  rua?: string;
+  numero?: string;
+  bairro?: string;
+  cidade?: string;
+  estado?: string;
+  cep?: string;
+  // outros campos que seu endereço tiver
+}
+
 export const buscarDadosCEP = async (cep: string) => {
   try {
     // Tenta BrasilAPI primeiro
@@ -19,7 +29,8 @@ export const buscarDadosCEP = async (cep: string) => {
     return viaCepData;
   }
 };
-export const criarEndereco = async (endereco) => {
+
+export const criarEndereco = async (endereco: Endereco) => {
   try {
     const response = await fetch('http://localhost:8080/enderecos', {
       method: 'POST',
@@ -39,11 +50,21 @@ export const criarEndereco = async (endereco) => {
     }
 
     return await response.json();
-  } catch (error) {
-    // Erros de rede, como "Failed to fetch"
-    if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-      throw new Error('Erro de conexão: Não foi possível conectar ao servidor.');
+  } catch (error: unknown) {
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'message' in error &&
+      typeof (error as any).message === 'string'
+    ) {
+      if (
+        (error as any).message.includes('Failed to fetch') ||
+        (error as any).message.includes('NetworkError')
+      ) {
+        throw new Error('Erro de conexão: Não foi possível conectar ao servidor.');
+      }
+      throw error;
     }
-    throw error;
+    throw new Error('Erro desconhecido');
   }
 };
