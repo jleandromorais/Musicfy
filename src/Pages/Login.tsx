@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaUser, FaLock, FaEnvelope } from 'react-icons/fa';
+import { FaUser, FaLock, FaEnvelope, FaArrowLeft } from 'react-icons/fa';
 import { FcGoogle } from 'react-icons/fc';
 import {
   GoogleAuthProvider,
@@ -10,12 +10,10 @@ import {
   signInWithEmailAndPassword,
   updateProfile,
 } from 'firebase/auth';
-
-import type { User } from 'firebase/auth';
 import { auth } from '../firebase';
-
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';  // <-- Import do hook de autenticação
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
+import type { User } from 'firebase/auth';
 
 interface FirebaseError extends Error {
   code: string;
@@ -23,39 +21,36 @@ interface FirebaseError extends Error {
 }
 
 const AuthPage = () => {
-  const [isLoginView, setIsLoginView] = useState<boolean>(true);
+  const [isLoginView, setIsLoginView] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { currentUser, loading: carregandoUsuario } = useAuth();
 
-  const { currentUser, loading: carregandoUsuario } = useAuth(); // <-- Hook para pegar usuário atual
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-  const [fullName, setFullName] = useState<string>('');
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-
-  // Redireciona usuário já logado para a home (ou página desejada)
   useEffect(() => {
     if (!carregandoUsuario && currentUser) {
       navigate('/');
     }
   }, [carregandoUsuario, currentUser, navigate]);
 
-  // Função para registrar o usuário no backend ou lidar com o caso de já existir
-  const registerUserInBackend = async (user: User): Promise<any> => { // Retorna 'any' para flexibilidade na resposta JSON
+  const registerUserInBackend = async (user: User): Promise<any> => {
     try {
       const userDTO = {
         firebaseUid: user.uid,
         fullName: user.displayName || fullName,
-        email: user.email || email
+        email: user.email || email,
       };
 
       const response = await fetch('http://localhost:8080/api/usuario/criar', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(userDTO)
+        body: JSON.stringify(userDTO),
       });
 
       const responseText = await response.text();
@@ -65,28 +60,26 @@ const AuthPage = () => {
         try {
           responseJson = JSON.parse(responseText);
         } catch (jsonError) {
-          console.error('Erro ao analisar JSON da resposta do backend:', jsonError, 'Resposta:', responseText);
+          console.error('Erro ao analisar JSON:', jsonError);
           responseJson = { message: responseText };
         }
       }
 
       if (!response.ok) {
         if (response.status === 409) {
-          console.warn('Usuário já existe no backend, prosseguindo com o login.');
+          console.warn('Usuário já existe no backend.');
           return responseJson;
         }
 
-        // Garantir que a mensagem seja string antes de lançar erro
-        const errorMessage = typeof responseJson === 'object' && responseJson !== null && 'message' in responseJson
+        const errorMessage = typeof responseJson === 'object' && 'message' in responseJson
           ? String(responseJson.message)
-          : String(responseText || 'Failed to register user in backend');
+          : String(responseText || 'Erro ao registrar');
         throw new Error(errorMessage);
       }
 
-      console.log('Usuário registrado com sucesso no backend:', responseJson);
       return responseJson;
     } catch (error) {
-      console.error('Erro no registro do backend:', error);
+      console.error('Erro no backend:', error);
       throw error;
     }
   };
@@ -96,17 +89,12 @@ const AuthPage = () => {
       try {
         const result = await getRedirectResult(auth);
         if (result?.user) {
-          try {
-            await registerUserInBackend(result.user);
-            navigate('/');
-          } catch (e) {
-            setError('Falha ao registrar/processar usuário no backend.');
-            console.error("Erro no processamento do usuário após redirect:", e);
-          }
+          await registerUserInBackend(result.user);
+          navigate('/');
         }
       } catch (error) {
-        console.error("Erro de redirecionamento:", error);
-        setError("Ocorreu um erro durante o redirecionamento do login.");
+        console.error("Erro no redirect:", error);
+        setError("Erro ao autenticar com o Google.");
       } finally {
         setLoading(false);
       }
@@ -119,12 +107,8 @@ const AuthPage = () => {
   const handleGoogleSignIn = async () => {
     setLoading(true);
     setError(null);
-
-    // Declarar provider aqui, para usar dentro do catch também
     const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({
-      prompt: 'select_account'
-    });
+    provider.setCustomParameters({ prompt: 'select_account' });
 
     try {
       const result = await signInWithPopup(auth, provider);
@@ -132,17 +116,16 @@ const AuthPage = () => {
       navigate('/');
     } catch (error) {
       const err = error as FirebaseError;
-      let errorMessage = 'Falha ao fazer login com o Google.';
+      let message = 'Erro ao entrar com Google.';
       if (err.code === 'auth/popup-closed-by-user') {
-        errorMessage = 'O popup de login foi fechado.';
+        message = 'Popup fechado pelo usuário.';
       } else if (err.code === 'auth/popup-blocked') {
-        errorMessage = 'O popup de login foi bloqueado. Por favor, permita popups.';
+        message = 'Popup bloqueado. Redirecionando...';
         await signInWithRedirect(auth, provider);
       } else if (err.message) {
-        errorMessage = err.message;
+        message = err.message;
       }
-      setError(errorMessage);
-      console.error('Erro de autenticação Google:', err);
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -161,7 +144,7 @@ const AuthPage = () => {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         if (userCredential.user) {
           await updateProfile(userCredential.user, {
-            displayName: fullName
+            displayName: fullName,
           });
           await registerUserInBackend(userCredential.user);
         }
@@ -171,23 +154,23 @@ const AuthPage = () => {
       const err = error as FirebaseError;
       switch (err.code) {
         case 'auth/user-not-found':
-          setError("Nenhum usuário encontrado com este e-mail.");
+          setError("Usuário não encontrado.");
           break;
         case 'auth/wrong-password':
-          setError("Senha incorreta. Por favor, tente novamente.");
+          setError("Senha incorreta.");
           break;
         case 'auth/invalid-credential':
-          setError("Credenciais inválidas. Verifique seu e-mail e senha.");
+          setError("Credenciais inválidas.");
           break;
         case 'auth/email-already-in-use':
-          setError("Este e-mail já está em uso por outra conta.");
+          setError("E-mail já está em uso.");
           break;
         case 'auth/weak-password':
-          setError("A senha deve ter pelo menos 6 caracteres.");
+          setError("Senha fraca. Use pelo menos 6 caracteres.");
           break;
         default:
-          setError("Falha na autenticação. Tente novamente.");
-          console.error('Erro de autenticação:', err);
+          setError("Erro na autenticação.");
+          console.error(err);
       }
     } finally {
       setLoading(false);
@@ -200,6 +183,15 @@ const AuthPage = () => {
       <div className="absolute top-1/3 left-1/4 w-[800px] h-[800px] rounded-full bg-[#35589A] opacity-20 filter blur-3xl animate-pulse"></div>
 
       <div className="relative z-10 max-w-md w-full space-y-6 bg-black/30 backdrop-blur-md p-10 rounded-xl shadow-2xl">
+        {/* 🔙 Botão de voltar */}
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 text-orange-400 hover:text-orange-300 transition-colors mb-2 font-semibold"
+        >
+          <FaArrowLeft />
+          Voltar para Home
+        </Link>
+
         <div className="text-center">
           <h2 className="text-4xl font-extrabold text-white">
             {isLoginView ? 'Welcome Back' : 'Create Account'}
@@ -253,13 +245,13 @@ const AuthPage = () => {
             className="w-full py-3 px-4 rounded-md text-white bg-orange-600 hover:bg-orange-700 font-medium transition-colors"
             disabled={loading}
           >
-            {loading ? 'Processing...' : (isLoginView ? 'Sign In' : 'Sign Up')}
+            {loading ? 'Processando...' : isLoginView ? 'Sign In' : 'Sign Up'}
           </button>
         </form>
 
         <div className="flex items-center justify-center">
           <div className="flex-grow border-t border-gray-600"></div>
-          <span className="mx-4 text-gray-400 text-sm">OR</span>
+          <span className="mx-4 text-gray-400 text-sm">OU</span>
           <div className="flex-grow border-t border-gray-600"></div>
         </div>
 
@@ -269,7 +261,7 @@ const AuthPage = () => {
           className="w-full flex justify-center items-center gap-3 py-3 px-4 border border-gray-600 rounded-md text-white bg-gray-800 hover:bg-gray-700 font-medium transition-colors"
         >
           <FcGoogle size={22} />
-          <span>Continue with Google</span>
+          <span>Entrar com Google</span>
         </button>
 
         {error && (
@@ -284,7 +276,9 @@ const AuthPage = () => {
             className="font-medium text-orange-400 hover:text-orange-500 transition-colors"
             disabled={loading}
           >
-            {isLoginView ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
+            {isLoginView
+              ? "Don't have an account? Sign up"
+              : "Already have an account? Sign in"}
           </button>
         </div>
       </div>
