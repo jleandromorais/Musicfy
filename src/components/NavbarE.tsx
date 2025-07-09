@@ -1,7 +1,6 @@
-// src/components/NavbarE.tsx
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {  faShoppingCart, faSignOutAlt, faUser } from '@fortawesome/free-solid-svg-icons';
+import { faShoppingCart, faSignOutAlt, faUser, faBoxOpen } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
@@ -46,25 +45,34 @@ const Navbar = () => {
           />
         </div>
 
-        {/* Navegação */}
+        {/* Navegação (visível só em telas médias ou maiores) */}
         <nav className="hidden md:flex gap-8">
           <button onClick={() => navigate('/')} className="text-white font-medium hover:text-orange-400">Home</button>
           <button onClick={() => navigate('/explore')} className="text-white font-medium hover:text-orange-400">Explore</button>
-           <button onClick={() => navigate('/orders')} className="text-white font-medium hover:text-orange-400">Pedidos</button>
-         
+          <button onClick={() => navigate('/orders')} className="text-white font-medium hover:text-orange-400">Pedidos</button>
         </nav>
 
-        {/* Ações */}
-        <div className="hidden md:flex items-center gap-6">
-          <button className="text-white hover:text-orange-400" onClick={() => navigate('/cart')}>
+        {/* Ações (sempre visíveis) */}
+        <div className="flex items-center gap-4">
+          {/* Carrinho */}
+          <button className="text-white hover:text-orange-400" onClick={() => navigate('/cart')} title="Carrinho">
             <FontAwesomeIcon icon={faShoppingCart} size="lg" />
           </button>
 
+          {/* Pedidos (visível no mobile) */}
+          <button className="text-white hover:text-orange-400 md:hidden" onClick={() => navigate('/orders')} title="Pedidos">
+            <FontAwesomeIcon icon={faBoxOpen} size="lg" />
+          </button>
+
+          {/* Usuário logado */}
           {firebaseUser && (
             <>
-              <div className="text-white">Olá, {getUserFirstName()}</div>
+              <div className="hidden md:block text-white">Olá, {getUserFirstName()}</div>
 
-              <div className="w-8 h-8 rounded-full bg-orange-400 flex items-center justify-center cursor-pointer" onClick={() => navigate('/profile')}>
+              <div
+                className="w-8 h-8 rounded-full bg-orange-400 flex items-center justify-center cursor-pointer"
+                onClick={() => navigate('/profile')}
+              >
                 {firebaseUser.photoURL ? (
                   <img src={firebaseUser.photoURL} alt="User" className="w-full h-full rounded-full" />
                 ) : (
@@ -74,9 +82,10 @@ const Navbar = () => {
             </>
           )}
 
+          {/* Botão de login/logout */}
           <button
             onClick={handleAuthAction}
-            className={`flex items-center gap-2 px-5 py-1.5 rounded-md font-medium transition-colors ${
+            className={`flex items-center gap-2 px-4 py-1.5 rounded-md font-medium transition-colors text-sm ${
               firebaseUser
                 ? 'bg-orange-400 text-white hover:bg-orange-500'
                 : 'bg-transparent text-orange-400 border border-orange-400 hover:bg-orange-400 hover:text-white'
@@ -85,7 +94,7 @@ const Navbar = () => {
             {firebaseUser ? (
               <>
                 <FontAwesomeIcon icon={faSignOutAlt} />
-                Sair
+                <span className="hidden sm:inline">Sair</span>
               </>
             ) : 'Login'}
           </button>
