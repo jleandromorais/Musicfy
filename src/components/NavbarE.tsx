@@ -48,7 +48,7 @@ const Navbar = () => {
         {/* Navegação (visível só em telas médias ou maiores) */}
         <nav className="hidden md:flex gap-8">
           <button onClick={() => navigate('/')} className="text-white font-medium hover:text-orange-400">Home</button>
-          <button onClick={() => navigate('/explore')} className="text-white font-medium hover:text-orange-400">Explore</button>
+          <button onClick={() => navigate('/products')} className="text-white font-medium hover:text-orange-400">Explore</button>
           <button onClick={() => navigate('/orders')} className="text-white font-medium hover:text-orange-400">Pedidos</button>
         </nav>
 
