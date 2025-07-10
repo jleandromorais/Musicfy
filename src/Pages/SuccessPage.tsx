@@ -5,7 +5,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { FaCheckCircle, FaSpinner, FaExclamationCircle } from 'react-icons/fa';
 import { useCart } from '../contexts/CartContext';
 
-// Estados para controlar o processo de verificação
+// Define os possíveis estados da verificação
 type VerificationStatus = 'verifying' | 'success' | 'error';
 
 const SuccessPage: React.FC = () => {
@@ -15,8 +15,10 @@ const SuccessPage: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string>('');
 
   useEffect(() => {
+    // 1. Captura o ID da sessão do URL
     const sessionId = searchParams.get('session_id');
 
+    // Se não houver session_id, é um erro.
     if (!sessionId) {
       setStatus('error');
       setErrorMessage('ID da sessão de pagamento não encontrado. O seu pedido não pôde ser confirmado.');
@@ -25,7 +27,8 @@ const SuccessPage: React.FC = () => {
 
     const verifySession = async () => {
       try {
-        // Crie este novo endpoint no seu backend
+        // 2. Envia o ID para o seu backend para verificação.
+        //    Lembre-se de criar este endpoint no seu backend!
         const response = await fetch('https://back-musicfy-origin-3.onrender.com/api/checkout/verify-session', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -33,16 +36,18 @@ const SuccessPage: React.FC = () => {
         });
 
         if (!response.ok) {
+          // Se o backend retornar um erro, captura a mensagem
           const errorData = await response.json();
           throw new Error(errorData.message || 'Falha ao verificar o pagamento.');
         }
 
-        // Se a verificação for bem-sucedida
+        // 3. Se a verificação for bem-sucedida, atualiza o estado e limpa o carrinho
         setStatus('success');
-        clearCart(); // Limpa o carrinho localmente
+        clearCart(); // Limpa o carrinho localmente no contexto
         localStorage.removeItem('cartId'); // Remove o ID do carrinho do localStorage
 
       } catch (err) {
+        // Em caso de qualquer erro na comunicação ou verificação
         setStatus('error');
         const message = err instanceof Error ? err.message : 'Ocorreu um erro desconhecido.';
         setErrorMessage(`Não foi possível confirmar o seu pedido. ${message}`);
@@ -50,10 +55,11 @@ const SuccessPage: React.FC = () => {
       }
     };
 
+    // Executa a função de verificação
     verifySession();
-  }, [searchParams, clearCart]);
+  }, [searchParams, clearCart]); // Dependências do useEffect
 
-  // Renderização condicional com base no status da verificação
+  // Função para renderizar o conteúdo com base no status da verificação
   const renderContent = () => {
     switch (status) {
       case 'verifying':
