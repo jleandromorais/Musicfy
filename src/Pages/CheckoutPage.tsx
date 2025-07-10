@@ -1,4 +1,3 @@
-// src/Pages/CheckoutPage.tsx
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
@@ -6,13 +5,12 @@ import { ToastContainer, toast } from 'react-toastify';
 import { useAuth } from '../hooks/useAuth';
 
 const opcoesEntrega = [
-  { id: 'padrao', name: 'Envio Padrão', price: 15.00, estimatedTime: '5-7 dias úteis' },
-  { id: 'expresso', name: 'Envio Expresso', price: 30.00, estimatedTime: '1-3 dias úteis' },
-  { id: 'retirada', name: 'Retirada Local', price: 0.00, estimatedTime: 'Pronto em 24 horas' },
+  { id: 'padrao', name: 'Envio Padrão', price: 15.0, estimatedTime: '5-7 dias úteis' },
+  { id: 'expresso', name: 'Envio Expresso', price: 30.0, estimatedTime: '1-3 dias úteis' },
+  { id: 'retirada', name: 'Retirada Local', price: 0.0, estimatedTime: 'Pronto em 24 horas' },
 ];
 
 const CheckoutPage: React.FC = () => {
-  // Corrected: Destructure 'cartId' instead of 'cart'
   const { cartId, cartItems, totalPrice } = useCart();
   const { currentUser } = useAuth();
   const navigate = useNavigate();
@@ -20,14 +18,12 @@ const CheckoutPage: React.FC = () => {
 
   const { detalhesEntrega } = location.state || {};
 
-  const selectedDeliveryOption = opcoesEntrega.find(
-    opt => opt.id === (detalhesEntrega?.metodoEntrega || 'padrao')
-  ) || opcoesEntrega[0];
+  const selectedDeliveryOption =
+    opcoesEntrega.find((opt) => opt.id === (detalhesEntrega?.metodoEntrega || 'padrao')) || opcoesEntrega[0];
 
   const shippingCost = selectedDeliveryOption.price;
   const grandTotal = totalPrice + shippingCost;
 
-  // Exibe mensagem se usuário não estiver logado
   if (!currentUser) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#1A002F] text-white">
@@ -45,8 +41,6 @@ const CheckoutPage: React.FC = () => {
     );
   }
 
-  // Exibe mensagem se carrinho estiver vazio ou indefinido
-  // Corrected: Check 'cartId' directly as it's the identifier for the cart
   if (!cartId || cartItems.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#1A002F] text-white">
@@ -66,7 +60,6 @@ const CheckoutPage: React.FC = () => {
 
   const handleFinalizeOrder = async () => {
     const missing = [];
-    // Corrected: Use 'cartId' here
     if (!cartId) missing.push('Carrinho');
     if (!currentUser?.id) missing.push('Usuário');
     if (!detalhesEntrega?.enderecoId) missing.push('Endereço');
@@ -77,21 +70,23 @@ const CheckoutPage: React.FC = () => {
     }
 
     const payload = {
-  cartId,
-  userId: currentUser.id,
-  enderecoId: detalhesEntrega.enderecoId,
-  items: cartItems.map((item) => ({
-    nomeProduto: item.name,
-    precoUnitario: item.price,
-    quantidade: item.quantity,
-  })),
-  metadata: {
-    userId: currentUser.id.toString(),
-    cartId: cartId.toString(),
-    enderecoId: detalhesEntrega.enderecoId.toString(),
-  }
-};
-
+      cartId,
+      userId: currentUser.id,
+      enderecoId: detalhesEntrega.enderecoId,
+      items: cartItems.map((item) => ({
+        nomeProduto: item.name,
+        precoUnitario: item.price,
+        quantidade: item.quantity,
+      })),
+      metadata: {
+        userId: currentUser.id.toString(),
+        cartId: cartId.toString(),
+        enderecoId: detalhesEntrega.enderecoId.toString(),
+      },
+      shippingMethod: selectedDeliveryOption.id,
+      shippingPrice: shippingCost,
+      totalPrice: grandTotal,
+    };
 
     try {
       const response = await fetch('https://back-musicfy-origin-3.onrender.com/api/checkout/create-session', {
@@ -124,14 +119,12 @@ const CheckoutPage: React.FC = () => {
       <div className="absolute top-1/2 left-1/2 w-[1000px] h-[1000px] rounded-full bg-[#35589A] opacity-15 filter blur-3xl transform -translate-x-1/2 -translate-y-1/2 z-0"></div>
 
       <div className="relative z-10 max-w-5xl mx-auto">
-        <h1 className="text-3xl sm:text-4xl font-bold text-orange-500 mb-8 text-center">
-          Finalizar Compra
-        </h1>
+        <h1 className="text-3xl sm:text-4xl font-bold text-orange-500 mb-8 text-center">Finalizar Compra</h1>
 
         <div className="flex flex-col lg:flex-row gap-8">
           <div className="lg:w-2/3 bg-gray-800 rounded-lg shadow-xl p-6">
             <h2 className="text-2xl font-bold mb-4">Resumo do Pedido</h2>
-            
+
             {cartItems.map((item) => (
               <div key={item.productId} className="flex justify-between items-center border-b border-gray-700 py-3">
                 <div className="flex items-center gap-4">
@@ -144,7 +137,7 @@ const CheckoutPage: React.FC = () => {
                 <p className="font-semibold">R$ {(item.price * item.quantity).toFixed(2)}</p>
               </div>
             ))}
-            
+
             <div className="mt-6 space-y-2 border-t border-gray-700 pt-4">
               <div className="flex justify-between text-gray-300">
                 <span>Subtotal dos produtos:</span>
