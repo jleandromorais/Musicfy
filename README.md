@@ -9,6 +9,7 @@ Musicfy é uma aplicação de e-commerce moderna focada em produtos de áudio co
 
 - 🔐 **Autenticação de Usuário**
   - Login/registro com e-mail/senha ou Google.
+    [!img](img/Login.png)
 - 🛍️ **Catálogo de Produtos**
   - Navegue por uma seleção de produtos com imagens, descrições e preços.
 - 🛒 **Carrinho de Compras Dinâmico**
