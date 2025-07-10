@@ -106,32 +106,43 @@ const AuthPage = () => {
 
   const toggleView = () => setIsLoginView(!isLoginView);
 
-  const handleGoogleSignIn = async () => {
-    setLoading(true);
-    setError(null);
-    const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: 'select_account' });
+ const handleGoogleSignIn = async () => {
+  setLoading(true);
+  setError(null);
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
 
+  try {
+    const result = await signInWithPopup(auth, provider);
+    console.log('Usuário do Google autenticado:', result.user);
+    
     try {
-      const result = await signInWithPopup(auth, provider);
       await registerUserInBackend(result.user);
-      navigate('/', { replace: true });
-    } catch (error) {
-      const err = error as FirebaseError;
-      let message = 'Erro ao entrar com Google.';
-      if (err.code === 'auth/popup-closed-by-user') {
-        message = 'Popup fechado pelo usuário.';
-      } else if (err.code === 'auth/popup-blocked') {
-        message = 'Popup bloqueado. Redirecionando...';
-        await signInWithRedirect(auth, provider);
-      } else if (err.message) {
-        message = err.message;
-      }
-      setError(message);
-    } finally {
-      setLoading(false);
+      console.log('Registro no backend concluído');
+    } catch (backendError) {
+      console.warn('Erro no backend, mas continuando:', backendError);
     }
-  };
+    
+    // Força o redirecionamento mesmo se houver erro no backend
+    navigate('/', { replace: true });
+    
+  } catch (error) {
+    const err = error as FirebaseError;
+    let message = 'Erro ao entrar com Google.';
+    if (err.code === 'auth/popup-closed-by-user') {
+      message = 'Popup fechado pelo usuário.';
+    } else if (err.code === 'auth/popup-blocked') {
+      message = 'Popup bloqueado. Redirecionando...';
+      await signInWithRedirect(auth, provider);
+      return; // Sai da função pois o redirect será tratado pelo useEffect
+    } else if (err.message) {
+      message = err.message;
+    }
+    setError(message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleEmailPasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
