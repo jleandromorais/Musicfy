@@ -2,9 +2,6 @@
 
 Musicfy é uma aplicação de e-commerce moderna focada em produtos de áudio como fones de ouvido, caixas de som e acessórios. Com uma interface intuitiva, responsiva e elegante, oferece uma experiência de compra completa desenvolvida com **React**, **TypeScript** e **Vite**.
 
-![Badge](https://img.shields.io/badge/status-em%20desenvolvimento-blue?style=flat-square)
-![Badge](https://img.shields.io/badge/PRs-welcome-success?style=flat-square)
-![Badge](https://img.shields.io/badge/license-MIT-lightgrey?style=flat-square)
 
 ---
 
