@@ -1,4 +1,5 @@
-import React from 'react';
+import { motion } from 'framer-motion';
+import type { Variants } from 'framer-motion';// Importe Variants para tipagem explícita
 
 interface Acessorio {
   id: string;
@@ -42,26 +43,61 @@ const GaleriaDeAcessorios: React.FC = () => {
 
   const aoClicarNoCartao = (idProduto: string): void => {
     console.log(`Visualizando detalhes do produto ${idProduto}`);
-    // Ex: navegação ou abertura de modal
-    // navigate(`/produto/${idProduto}`);
+  };
+
+  // --- SOLUÇÃO: Variantes explícitas e mais simples ---
+  
+  const cardVariantsLeft: Variants = {
+    offscreen: {
+      x: -300,
+      opacity: 0,
+    },
+    onscreen: {
+      x: 0,
+      opacity: 1,
+      transition: {
+        type: 'tween',
+        duration: 0.3,
+      },
+    },
+  };
+
+  const cardVariantsRight: Variants = {
+    offscreen: {
+      x: 300,
+      opacity: 0,
+    },
+    onscreen: {
+      x: 0,
+      opacity: 1,
+      transition: {
+        type: 'tween',
+        duration: 0.3,
+      },
+    },
   };
 
   return (
-    <section className="bg-black py-16 px-10">
+    <section className="bg-black py-16 px-10 overflow-x-hidden">
       <div className="max-w-6xl mx-auto">
         <h2 className="text-2xl md:text-3xl font-bold text-center text-white mb-28">
           Veja outros acessórios
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {acessorios.map((acessorio) => (
-            <div
+          {acessorios.map((acessorio, index) => (
+            <motion.div
               key={acessorio.id}
               className="bg-gray-900 rounded-lg overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-black/50 cursor-pointer"
               onClick={() => aoClicarNoCartao(acessorio.id)}
               role="button"
               tabIndex={0}
               onKeyDown={(e) => e.key === 'Enter' && aoClicarNoCartao(acessorio.id)}
+              
+              initial="offscreen"
+              whileInView="onscreen"
+              viewport={{ once: true, amount: 0.1 }}
+              variants={index % 2 === 0 ? cardVariantsLeft : cardVariantsRight} // Voltamos a usar a condição aqui
             >
               <div className={`relative h-60 ${acessorio.corDeFundo}`}>
                 <div
@@ -75,12 +111,11 @@ const GaleriaDeAcessorios: React.FC = () => {
                   </div>
                 </div>
               </div>
-
               <div className="p-4">
                 <h3 className="text-lg font-medium text-white">{acessorio.titulo}</h3>
                 <p className="text-sm text-gray-400">{acessorio.descricao}</p>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
