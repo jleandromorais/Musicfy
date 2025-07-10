@@ -20,8 +20,6 @@ Musicfy é uma aplicação de e-commerce moderna focada em produtos de áudio co
   - Pagamento seguro e processo simplificado.
 - 📦 **Histórico & Rastreamento de Pedidos**
   - Visualize pedidos anteriores e acompanhe entregas.
-- 🎨 **Tema Claro/Escuro**
-  - Alternância entre modos para melhor conforto visual.
 - 📱 **Design 100% Responsivo**
   - Compatível com desktop, tablets e smartphones.
 
