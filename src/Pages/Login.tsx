@@ -31,9 +31,10 @@ const AuthPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  // Redireciona se o usuário já estiver logado
   useEffect(() => {
     if (!carregandoUsuario && currentUser) {
-      navigate('/');
+      navigate('/', { replace: true });
     }
   }, [carregandoUsuario, currentUser, navigate]);
 
@@ -84,13 +85,14 @@ const AuthPage = () => {
     }
   };
 
+  // Trata o resultado do redirect do Google
   useEffect(() => {
     const handleRedirectResult = async () => {
       try {
         const result = await getRedirectResult(auth);
         if (result?.user) {
           await registerUserInBackend(result.user);
-          navigate('/');
+          navigate('/', { replace: true });
         }
       } catch (error) {
         console.error("Erro no redirect:", error);
@@ -113,7 +115,7 @@ const AuthPage = () => {
     try {
       const result = await signInWithPopup(auth, provider);
       await registerUserInBackend(result.user);
-      navigate('/');
+      navigate('/', { replace: true });
     } catch (error) {
       const err = error as FirebaseError;
       let message = 'Erro ao entrar com Google.';
@@ -139,7 +141,7 @@ const AuthPage = () => {
     try {
       if (isLoginView) {
         await signInWithEmailAndPassword(auth, email, password);
-        navigate('/');
+        navigate('/', { replace: true });
       } else {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         if (userCredential.user) {
@@ -148,7 +150,7 @@ const AuthPage = () => {
           });
           await registerUserInBackend(userCredential.user);
         }
-        navigate('/');
+        navigate('/', { replace: true });
       }
     } catch (error) {
       const err = error as FirebaseError;
@@ -183,7 +185,6 @@ const AuthPage = () => {
       <div className="absolute top-1/3 left-1/4 w-[800px] h-[800px] rounded-full bg-[#35589A] opacity-20 filter blur-3xl animate-pulse"></div>
 
       <div className="relative z-10 max-w-md w-full space-y-6 bg-black/30 backdrop-blur-md p-10 rounded-xl shadow-2xl">
-        {/* 🔙 Botão de voltar */}
         <Link
           to="/"
           className="inline-flex items-center gap-2 text-orange-400 hover:text-orange-300 transition-colors mb-2 font-semibold"
