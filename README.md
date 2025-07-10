@@ -1,58 +1,66 @@
-<<<<<<< HEAD
-# Musicfy
-=======
-# React + TypeScript + Vite
+# 🎧 Musicfy
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Musicfy é uma aplicação de e-commerce moderna focada em produtos de áudio como fones de ouvido, caixas de som e acessórios. Com uma interface intuitiva, responsiva e elegante, oferece uma experiência de compra completa desenvolvida com **React**, **TypeScript** e **Vite**.
 
-Currently, two official plugins are available:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## Expanding the ESLint configuration
+## ✨ Funcionalidades
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- 🔐 **Autenticação de Usuário**
+  - Login/registro com e-mail/senha ou Google.
+    ![Tela de Login](img/Login.png)
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+- 🛍️ **Catálogo de Produtos**
+  - Navegue por uma seleção de produtos com imagens, descrições e preços.
+- 🛒 **Carrinho de Compras Dinâmico**
+  - Adição, remoção e ajuste de quantidades em tempo real.
+- 💳 **Checkout com Stripe**
+  - Pagamento seguro e processo simplificado.
+- 📦 **Histórico & Rastreamento de Pedidos**
+  - Visualize pedidos anteriores e acompanhe entregas.
+- 📱 **Design 100% Responsivo**
+  - Compatível com desktop, tablets e smartphones.
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## ⚙️ Tecnologias Utilizadas
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
->>>>>>> master
+### 🧠 Frontend
+- **React** + **TypeScript**
+- **Vite** para build rápida e leve
+- **Tailwind CSS** para estilização
+- **Framer Motion**, **React Icons**, **Font Awesome** para animações e ícones
+
+### 🔄 Gerenciamento de Estado
+- **React Context API**
+
+### 🔔 Notificações
+- **React Toastify**
+
+### 🔐 Autenticação & Backend
+- **Firebase Authentication**
+
+### 🌐 Comunicação com Backend
+- **Fetch API**
+
+---
+
+## 🚀 Começando
+
+### ✅ Pré-requisitos
+
+- Node.js 14+
+- npm ou yarn
+
+### 🔧 Instalação
+
+```bash
+# Clone o repositório
+git clone https://github.com/jleandromorais/musicfy.git
+
+# Acesse o diretório
+cd musicfy
+
+# Instale as dependências
+npm install
