@@ -25,7 +25,7 @@ export const useAuth = () => {
           let backendUser: AppUser | null = null;
 
           // 1. Tentar buscar usuário no backend usando o Firebase UID
-          let buscarResponse = await fetch(`http://localhost:8080/api/usuario/firebase/${fbUser.uid}`, {
+          let buscarResponse = await fetch(`https://back-musicfy-origin-3.onrender.com/api/usuario/firebase/${fbUser.uid}`, {
             headers: {
               'Authorization': `Bearer ${idToken}`, // Adicione o ID Token aqui
               'Content-Type': 'application/json' // Garanta este header para JSON requests
@@ -38,7 +38,7 @@ export const useAuth = () => {
           } else if (buscarResponse.status === 404) {
             console.log('[useAuth] Usuário não encontrado no backend, tentando criar...');
             // 2. Se o usuário não existir (404), tenta criá-lo no backend
-            const criarResponse = await fetch('http://localhost:8080/api/usuario/criar', {
+            const criarResponse = await fetch('https://back-musicfy-origin-3.onrender.com/api/usuario/criar', {
               method: 'POST',
               headers: {
                 'Authorization': `Bearer ${idToken}`, // Adicione o ID Token aqui também
@@ -62,7 +62,7 @@ export const useAuth = () => {
             // Caso o backend de 'criar' não retorne o ID, fazemos outra busca
             if (!backendUser || backendUser.id === undefined || backendUser.id === null) {
               console.warn('[useAuth] Usuário criado não retornou ID, re-buscando...');
-              const rebuscarResponse = await fetch(`http://localhost:8080/api/usuario/firebase/${fbUser.uid}`, {
+              const rebuscarResponse = await fetch(`https://back-musicfy-origin-3.onrender.com/api/usuario/firebase/${fbUser.uid}`, {
                 headers: {
                   'Authorization': `Bearer ${idToken}`, // Adicione o ID Token na re-busca
                   'Content-Type': 'application/json'
