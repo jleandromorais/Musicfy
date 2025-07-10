@@ -1,71 +1,69 @@
-# Musicfy
+# 🎧 Musicfy
 
-Musicfy é uma moderna aplicação de e-commerce de front-end desenvolvida com React, TypeScript e Vite. Ela oferece uma experiência de compra completa para produtos de áudio, como fones de ouvido e acessórios, com um design elegante e responsivo.
+Musicfy é uma aplicação de e-commerce moderna focada em produtos de áudio como fones de ouvido, caixas de som e acessórios. Com uma interface intuitiva, responsiva e elegante, oferece uma experiência de compra completa desenvolvida com **React**, **TypeScript** e **Vite**.
 
-## Funcionalidades
+![Badge](https://img.shields.io/badge/status-em%20desenvolvimento-blue?style=flat-square)
+![Badge](https://img.shields.io/badge/PRs-welcome-success?style=flat-square)
+![Badge](https://img.shields.io/badge/license-MIT-lightgrey?style=flat-square)
 
-* **Autenticação de Usuário**: Sistema completo de login e registro, com opções de e-mail/senha e login social através do Google.
-* **Navegação de Produtos**: Explore uma variedade de produtos de áudio com descrições detalhadas e preços.
-* **Carrinho de Compras Dinâmico**: Adicione, remova, e ajuste a quantidade de itens no seu carrinho com total fluidez.
-* **Checkout Simplificado**: Um processo de checkout intuitivo, desde o preenchimento do endereço de entrega até a finalização do pagamento via Stripe.
-* **Histórico de Pedidos**: Visualize todos os seus pedidos anteriores e acompanhe o status de entrega em tempo real.
-* **Rastreamento de Entrega**: Acompanhe o progresso da sua entrega, desde a confirmação do pedido até a chegada em sua porta.
-* **Tema Customizável**: Alterne entre os modos claro e escuro para uma experiência de visualização mais confortável.
-* **Design Responsivo**: Uma interface que se adapta perfeitamente a qualquer dispositivo, seja desktop, tablet ou smartphone.
+---
 
-## Tecnologias Utilizadas
+## ✨ Funcionalidades
 
-Este projeto foi construído utilizando as seguintes tecnologias:
+- 🔐 **Autenticação de Usuário**
+  - Login/registro com e-mail/senha ou Google.
+- 🛍️ **Catálogo de Produtos**
+  - Navegue por uma seleção de produtos com imagens, descrições e preços.
+- 🛒 **Carrinho de Compras Dinâmico**
+  - Adição, remoção e ajuste de quantidades em tempo real.
+- 💳 **Checkout com Stripe**
+  - Pagamento seguro e processo simplificado.
+- 📦 **Histórico & Rastreamento de Pedidos**
+  - Visualize pedidos anteriores e acompanhe entregas.
+- 🎨 **Tema Claro/Escuro**
+  - Alternância entre modos para melhor conforto visual.
+- 📱 **Design 100% Responsivo**
+  - Compatível com desktop, tablets e smartphones.
 
-* **Frontend**:
-    * React
-    * TypeScript
-    * Vite
-    * Tailwind CSS
-* **Roteamento**:
-    * React Router
-* **Gerenciamento de Estado**:
-    * React Context API
-* **Estilização e Animações**:
-    * Tailwind CSS
-    * Framer Motion
-    * React-Icons
-    * Font Awesome
-* **Notificações**:
-    * React Toastify
-* **Autenticação e Backend**:
-    * Firebase (Autenticação)
-* **Comunicação com API**:
-    * Fetch API
+---
 
-## Começando
+## ⚙️ Tecnologias Utilizadas
 
-Siga os passos abaixo para configurar e executar o projeto em seu ambiente local.
+### 🧠 Frontend
+- **React** + **TypeScript**
+- **Vite** para build rápida e leve
+- **Tailwind CSS** para estilização
+- **Framer Motion**, **React Icons**, **Font Awesome** para animações e ícones
 
-### Pré-requisitos
+### 🔄 Gerenciamento de Estado
+- **React Context API**
 
-* Node.js (versão 14 ou superior)
-* npm (geralmente instalado com o Node.js)
+### 🔔 Notificações
+- **React Toastify**
 
-### Instalação
+### 🔐 Autenticação & Backend
+- **Firebase Authentication**
 
-1.  **Clone o repositório:**
-    ```bash
-    git clone [https://github.com/jleandromorais/musicfy.git](https://github.com/jleandromorais/musicfy.git)
-    ```
-2.  **Navegue até o diretório do projeto:**
-    ```bash
-    cd musicfy
-    ```
-3.  **Instale as dependências:**
-    ```bash
-    npm install
-    ```
-   
+### 🌐 Comunicação com Backend
+- **Fetch API**
 
-### Executando o Projeto
+---
 
-Para iniciar o servidor de desenvolvimento, execute o seguinte comando:
+## 🚀 Começando
+
+### ✅ Pré-requisitos
+
+- Node.js 14+
+- npm ou yarn
+
+### 🔧 Instalação
 
 ```bash
-npm run dev
+# Clone o repositório
+git clone https://github.com/jleandromorais/musicfy.git
+
+# Acesse o diretório
+cd musicfy
+
+# Instale as dependências
+npm install
