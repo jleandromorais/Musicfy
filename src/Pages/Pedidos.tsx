@@ -67,9 +67,14 @@ const OrdersPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchOrders = useCallback(async () => {
-    if (!currentUser) return;
+    if (!currentUser) {
+      console.log('fetchOrders: currentUser is null or undefined');
+      return;
+    }
 
     try {
+      console.log('Buscando pedidos para usuário:', currentUser.firebaseUid);
+
       setLoading(true);
       setError(null);
 
@@ -79,6 +84,8 @@ const OrdersPage: React.FC = () => {
       }
 
       const data: OrderDTO[] = await response.json();
+
+      console.log('Pedidos recebidos do backend:', data);
 
       const mappedOrders: Order[] = data.map(orderDto => ({
         id: orderDto.id.toString(),
@@ -111,8 +118,10 @@ const OrdersPage: React.FC = () => {
   }, [currentUser]);
 
   useEffect(() => {
+    console.log('authLoading:', authLoading, 'currentUser:', currentUser);
     if (!authLoading) {
       if (!currentUser) {
+        console.log('Usuário não logado, redirecionando para login');
         navigate('/login');
       } else {
         fetchOrders();
