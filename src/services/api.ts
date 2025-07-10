@@ -1,5 +1,5 @@
 // api.ts
-const API_BASE_URL = "http://localhost:8080/api/carrinho";
+const API_BASE_URL = "https://back-musicfy-origin-3.onrender.com/api/carrinho";
 
 export const fetchCart = async (cartId: number) => {
   const response = await fetch(`${API_BASE_URL}/${cartId}`);

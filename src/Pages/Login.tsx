@@ -45,7 +45,7 @@ const AuthPage = () => {
         email: user.email || email,
       };
 
-      const response = await fetch('http://localhost:8080/api/usuario/criar', {
+      const response = await fetch('https://back-musicfy-origin-3.onrender.com/api/usuario/criar', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

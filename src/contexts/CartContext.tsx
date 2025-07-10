@@ -95,7 +95,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       if (!currentUser?.id) return;
 
       try {
-        const res = await fetch(`http://localhost:8080/api/carrinho/usuario/${currentUser.id}`);
+        const res = await fetch(`https://back-musicfy-origin-3.onrender.com/api/carrinho/usuario/${currentUser.id}`);
         if (!res.ok) throw new Error(`Erro ao buscar carrinho: ${res.status}`);
         const backendCart = await res.json();
 

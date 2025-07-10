@@ -73,7 +73,7 @@ const OrdersPage: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(`http://localhost:8080/api/orders/user/${currentUser.firebaseUid}`);
+      const response = await fetch(`https://back-musicfy-origin-3.onrender.com/api/orders/user/${currentUser.firebaseUid}`);
       if (!response.ok) {
         throw new Error(`Erro ao buscar pedidos: ${response.statusText}`);
       }
@@ -125,7 +125,7 @@ const OrdersPage: React.FC = () => {
     if (!window.confirm("Tem certeza que deseja cancelar este pedido?")) return;
 
     try {
-      const response = await fetch(`http://localhost:8080/api/orders/${orderId}/status`, {
+      const response = await fetch(`https://back-musicfy-origin-3.onrender.com/api/orders/${orderId}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'CANCELLED' }),

@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:8080/api/carrinho";
+const BASE_URL = "https://back-musicfy-origin-3.onrender.com0/api/carrinho";
 
 // Helper function for consistent error handling
 const handleApiResponse = async (response: Response) => {
