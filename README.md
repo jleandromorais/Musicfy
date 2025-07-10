@@ -1,58 +1,71 @@
-<<<<<<< HEAD
 # Musicfy
-=======
-# React + TypeScript + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Musicfy é uma moderna aplicação de e-commerce de front-end desenvolvida com React, TypeScript e Vite. Ela oferece uma experiência de compra completa para produtos de áudio, como fones de ouvido e acessórios, com um design elegante e responsivo.
 
-Currently, two official plugins are available:
+## Funcionalidades
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+* **Autenticação de Usuário**: Sistema completo de login e registro, com opções de e-mail/senha e login social através do Google.
+* **Navegação de Produtos**: Explore uma variedade de produtos de áudio com descrições detalhadas e preços.
+* **Carrinho de Compras Dinâmico**: Adicione, remova, e ajuste a quantidade de itens no seu carrinho com total fluidez.
+* **Checkout Simplificado**: Um processo de checkout intuitivo, desde o preenchimento do endereço de entrega até a finalização do pagamento via Stripe.
+* **Histórico de Pedidos**: Visualize todos os seus pedidos anteriores e acompanhe o status de entrega em tempo real.
+* **Rastreamento de Entrega**: Acompanhe o progresso da sua entrega, desde a confirmação do pedido até a chegada em sua porta.
+* **Tema Customizável**: Alterne entre os modos claro e escuro para uma experiência de visualização mais confortável.
+* **Design Responsivo**: Uma interface que se adapta perfeitamente a qualquer dispositivo, seja desktop, tablet ou smartphone.
 
-## Expanding the ESLint configuration
+## Tecnologias Utilizadas
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Este projeto foi construído utilizando as seguintes tecnologias:
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+* **Frontend**:
+    * React
+    * TypeScript
+    * Vite
+    * Tailwind CSS
+* **Roteamento**:
+    * React Router
+* **Gerenciamento de Estado**:
+    * React Context API
+* **Estilização e Animações**:
+    * Tailwind CSS
+    * Framer Motion
+    * React-Icons
+    * Font Awesome
+* **Notificações**:
+    * React Toastify
+* **Autenticação e Backend**:
+    * Firebase (Autenticação)
+* **Comunicação com API**:
+    * Fetch API
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Começando
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Siga os passos abaixo para configurar e executar o projeto em seu ambiente local.
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
->>>>>>> master
+### Pré-requisitos
+
+* Node.js (versão 14 ou superior)
+* npm (geralmente instalado com o Node.js)
+
+### Instalação
+
+1.  **Clone o repositório:**
+    ```bash
+    git clone [https://github.com/jleandromorais/musicfy.git](https://github.com/jleandromorais/musicfy.git)
+    ```
+2.  **Navegue até o diretório do projeto:**
+    ```bash
+    cd musicfy
+    ```
+3.  **Instale as dependências:**
+    ```bash
+    npm install
+    ```
+   
+
+### Executando o Projeto
+
+Para iniciar o servidor de desenvolvimento, execute o seguinte comando:
+
+```bash
+npm run dev
