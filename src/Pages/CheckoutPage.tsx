@@ -1,9 +1,10 @@
 // src/Pages/CheckoutPage.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 import { ToastContainer, toast } from 'react-toastify';
 import { useAuth } from '../hooks/useAuth';
+import { FaSpinner } from 'react-icons/fa'; // Importar o ícone de spinner
 
 const opcoesEntrega = [
   { id: 'padrao', name: 'Envio Padrão', price: 15.00, estimatedTime: '5-7 dias úteis' },
@@ -12,13 +13,24 @@ const opcoesEntrega = [
 ];
 
 const CheckoutPage: React.FC = () => {
-  // Corrected: Destructure 'cartId' instead of 'cart'
   const { cartId, cartItems, totalPrice } = useCart();
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
+  const [isLoading, setIsLoading] = useState(false); // 1. Adicionar estado de loading
+
   const { detalhesEntrega } = location.state || {};
+
+  // Se não houver detalhes de entrega, redirecionar para a página de endereço
+  if (!detalhesEntrega) {
+    // Usamos um useEffect para evitar a renderização parcial antes do redirecionamento
+    React.useEffect(() => {
+      toast.info("Por favor, preencha os seus detalhes de entrega primeiro.");
+      navigate('/delivery');
+    }, [navigate]);
+    return null; // Não renderiza nada enquanto redireciona
+  }
 
   const selectedDeliveryOption = opcoesEntrega.find(
     opt => opt.id === (detalhesEntrega?.metodoEntrega || 'padrao')
@@ -31,7 +43,6 @@ const CheckoutPage: React.FC = () => {
   if (!currentUser) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#1A002F] text-white">
-        <ToastContainer position="bottom-right" />
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-4">Você precisa estar logado para finalizar a compra.</h2>
           <button
@@ -45,14 +56,12 @@ const CheckoutPage: React.FC = () => {
     );
   }
 
-  // Exibe mensagem se carrinho estiver vazio ou indefinido
-  // Corrected: Check 'cartId' directly as it's the identifier for the cart
+  // Exibe mensagem se carrinho estiver vazio
   if (!cartId || cartItems.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#1A002F] text-white">
-        <ToastContainer position="bottom-right" />
         <div className="text-center">
-          <h2 className="text-2xl font-bold mb-4">Seu carrinho está vazio.</h2>
+          <h2 className="text-2xl font-bold mb-4">O seu carrinho está vazio.</h2>
           <button
             className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-6 rounded-lg transition-colors"
             onClick={() => navigate('/')}
@@ -65,33 +74,37 @@ const CheckoutPage: React.FC = () => {
   }
 
   const handleFinalizeOrder = async () => {
+    // 2. Iniciar o loading
+    setIsLoading(true);
+
     const missing = [];
-    // Corrected: Use 'cartId' here
     if (!cartId) missing.push('Carrinho');
     if (!currentUser?.id) missing.push('Usuário');
     if (!detalhesEntrega?.enderecoId) missing.push('Endereço');
 
     if (missing.length > 0) {
-      toast.error(`Faltando: ${missing.join(', ')}`);
+      toast.error(`Informações em falta: ${missing.join(', ')}`);
+      setIsLoading(false); // Parar o loading em caso de erro
       return;
     }
 
     const payload = {
-  cartId,
-  userId: currentUser.id,
-  enderecoId: detalhesEntrega.enderecoId,
-  items: cartItems.map((item) => ({
-    nomeProduto: item.name,
-    precoUnitario: item.price,
-    quantidade: item.quantity,
-  })),
-  metadata: {
-    userId: currentUser.id.toString(),
-    cartId: cartId.toString(),
-    enderecoId: detalhesEntrega.enderecoId.toString(),
-  }
-};
-
+      cartId,
+      userId: currentUser.id,
+      enderecoId: detalhesEntrega.enderecoId,
+      // Incluir mais detalhes do item, como a imagem, pode ser útil para o Stripe
+      items: cartItems.map((item) => ({
+        nomeProduto: item.name,
+        precoUnitario: item.price,
+        quantidade: item.quantity,
+        imagemUrl: item.img, // Adicionar URL da imagem
+      })),
+      metadata: {
+        userId: currentUser.id.toString(),
+        cartId: cartId.toString(),
+        enderecoId: detalhesEntrega.enderecoId.toString(),
+      }
+    };
 
     try {
       const response = await fetch('https://back-musicfy-origin-3.onrender.com/api/checkout/create-session', {
@@ -109,18 +122,20 @@ const CheckoutPage: React.FC = () => {
       if (data.url) {
         window.location.href = data.url;
       } else {
-        toast.error('URL de pagamento não recebida.');
+        toast.error('URL de pagamento não recebida do servidor.');
+        setIsLoading(false); // Parar o loading
       }
     } catch (error) {
       console.error('Erro ao finalizar o pedido:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido ao iniciar o pagamento.';
       toast.error(`Falha ao iniciar o pagamento: ${errorMessage}. Tente novamente.`);
+      setIsLoading(false); // Parar o loading em caso de erro
     }
   };
 
   return (
     <div className="bg-[#1A002F] text-white min-h-screen p-4 sm:p-6 lg:p-8 relative overflow-hidden">
-      <ToastContainer position="bottom-right" />
+      <ToastContainer position="bottom-right" theme="dark" />
       <div className="absolute top-1/2 left-1/2 w-[1000px] h-[1000px] rounded-full bg-[#35589A] opacity-15 filter blur-3xl transform -translate-x-1/2 -translate-y-1/2 z-0"></div>
 
       <div className="relative z-10 max-w-5xl mx-auto">
@@ -172,9 +187,17 @@ const CheckoutPage: React.FC = () => {
             </p>
             <button
               onClick={handleFinalizeOrder}
-              className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 rounded-lg transition-colors"
+              disabled={isLoading} // 3. Desativar o botão durante o loading
+              className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 rounded-lg transition-colors flex items-center justify-center disabled:bg-orange-800 disabled:cursor-not-allowed"
             >
-              Pagar com Stripe
+              {isLoading ? (
+                <>
+                  <FaSpinner className="animate-spin mr-2" />
+                  A processar...
+                </>
+              ) : (
+                'Pagar com Stripe'
+              )}
             </button>
           </div>
         </div>
