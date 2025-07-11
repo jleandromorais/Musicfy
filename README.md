@@ -70,6 +70,7 @@
 
 O projeto está organizado da seguinte forma:
 
+```
 /src
 |-- /components     # Componentes reutilizáveis (Navbar, Footer, etc.)
 |-- /contexts       # Contextos da aplicação (CartContext)
@@ -81,7 +82,7 @@ O projeto está organizado da seguinte forma:
 |-- main.tsx        # Ponto de entrada da aplicação
 |-- firebase.ts     # Configuração do Firebase
 |-- index.css       # Estilos globais com Tailwind
-
+```
 
 ---
 
