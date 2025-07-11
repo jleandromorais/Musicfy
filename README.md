@@ -12,7 +12,7 @@
 
 ## 🚀 Demo ao Vivo
 
-**[musicfy-two.vercel.app](https://musicfy-two.vercel.app/))**
+**[Acesse aq !](https://musicfy-two.vercel.app/))**
 
 ---
 
