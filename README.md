@@ -1,41 +1,44 @@
 # 🎧 Musicfy
 
-Musicfy é uma aplicação de e-commerce moderna focada em produtos de áudio como fones de ouvido, caixas de som e acessórios. Com uma interface intuitiva, responsiva e elegante, oferece uma experiência de compra completa desenvolvida com **React**, **TypeScript** e **Vite**.
-
+**Musicfy** é uma aplicação moderna de e-commerce voltada para produtos de áudio, como fones de ouvido, caixas de som e acessórios. Com uma interface elegante, intuitiva e 100% responsiva, oferece uma experiência de compra completa, desenvolvida com **React**, **TypeScript** e **Vite**.
 
 ---
 
 ## ✨ Funcionalidades
 
 - 🔐 **Autenticação de Usuário**
-  - Login/registro com e-mail/senha ou Google.
-    ![Tela de Login](img/Login.png)
+  - Login/registro com e-mail e senha ou autenticação via Google.
+  - ![Tela de Login](img/Login.png)
 
 - 🛍️ **Catálogo de Produtos**
-  - Navegue por uma seleção de produtos com imagens, descrições e preços.
-  - ![tela de produtos](img/product.png)
+  - Lista de produtos com imagens, descrições e preços.
+  - ![Catálogo de Produtos](img/product.png)
+
 - 🛒 **Carrinho de Compras Dinâmico**
-  - Adição, remoção e ajuste de quantidades em tempo real.
-  - ![Tela Do Carrinho](img/cart.png)
+  - Adicione, remova e ajuste a quantidade dos itens em tempo real.
+  - ![Carrinho de Compras](img/cart.png)
+
 - 💳 **Checkout com Stripe**
-  - Pagamento seguro e processo simplificado.
-    ![Tela Stripe](img/stripe.png)
-- 📦 **Histórico & Rastreamento de Pedidos**
-  - Visualize pedidos anteriores e acompanhe entregas.
-  - ![pedios!](img/pedidos.png)
-- 📱 **Design 100% Responsivo**
-  - Compatível com desktop, tablets e smartphones.
-    ![Resposivo](img/Resposividade.png)
+  - Pagamento seguro com integração Stripe.
+  - ![Tela de Pagamento](img/stripe.png)
+
+- 📦 **Histórico e Rastreamento de Pedidos**
+  - Consulte pedidos anteriores e acompanhe o status de entrega.
+  - ![Histórico de Pedidos](img/pedidos.png)
+
+- 📱 **Design Responsivo**
+  - Totalmente adaptável a desktops, tablets e smartphones.
+  - ![Design Responsivo](img/Resposividade.png)
 
 ---
 
 ## ⚙️ Tecnologias Utilizadas
 
-### 🧠 Frontend
+### 💻 Frontend
 - **React** + **TypeScript**
-- **Vite** para build rápida e leve
-- **Tailwind CSS** para estilização
-- **Framer Motion**, **React Icons**, **Font Awesome** para animações e ícones
+- **Vite** (build rápida e leve)
+- **Tailwind CSS** (estilização moderna e eficiente)
+- **Framer Motion**, **React Icons**, **Font Awesome** (animações e ícones)
 
 ### 🔄 Gerenciamento de Estado
 - **React Context API**
@@ -43,10 +46,10 @@ Musicfy é uma aplicação de e-commerce moderna focada em produtos de áudio co
 ### 🔔 Notificações
 - **React Toastify**
 
-### 🔐 Autenticação & Backend
+### 🔐 Autenticação
 - **Firebase Authentication**
 
-### 🌐 Comunicação com Backend
+### 🌐 Comunicação com o Backend
 - **Fetch API**
 
 ---
@@ -54,9 +57,8 @@ Musicfy é uma aplicação de e-commerce moderna focada em produtos de áudio co
 ## 🚀 Começando
 
 ### ✅ Pré-requisitos
-
-- Node.js 14+
-- npm ou yarn
+- Node.js v14 ou superior
+- npm ou yarn instalado
 
 ### 🔧 Instalação
 
@@ -69,3 +71,5 @@ cd musicfy
 
 # Instale as dependências
 npm install
+# ou
+yarn install
