@@ -12,7 +12,10 @@
 
 ## 🚀 Demo ao Vivo
 
-**[Acesse aq !](https://musicfy-two.vercel.app/))**
+**[Acesse aqui a aplicação](https://musicfy-two.vercel.app)**  
+🔗 Backend: [https://github.com/jleandromorais/Back-Musicfy-Origin](https://github.com/jleandromorais/Back-Musicfy-Origin)
+
+> ⚠️ **IMPORTANTE:** Como o backend está hospedado no Render (plano gratuito), ele pode demorar **até 5 minutos** para iniciar na **primeira requisição**. Recarregue a página após esse tempo, se necessário.
 
 ---
 
