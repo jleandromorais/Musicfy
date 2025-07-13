@@ -1,68 +1,119 @@
 # 🎧 Musicfy
 
-Musicfy é uma aplicação de e-commerce moderna focada em produtos de áudio como fones de ouvido, caixas de som e acessórios. Com uma interface intuitiva, responsiva e elegante, oferece uma experiência de compra completa desenvolvida com **React**, **TypeScript** e **Vite**.
+![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
+![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Firebase](https://img.shields.io/badge/firebase-%23039BE5.svg?style=for-the-badge&logo=firebase&logoColor=white)
 
+**Musicfy** é uma aplicação moderna de e-commerce voltada para produtos de áudio, como fones de ouvido, caixas de som e acessórios. Com uma interface elegante, intuitiva e 100% responsiva, oferece uma experiência de compra completa, desenvolvida com **React**, **TypeScript** e **Vite**.
+
+---
+
+## 🚀 Demo ao Vivo
+
+**[Acesse aqui a aplicação](https://musicfy-two.vercel.app)**  
+🔗 Backend: [https://github.com/jleandromorais/Back-Musicfy-Origin](https://github.com/jleandromorais/Back-Musicfy-Origin)
+
+> ⚠️ **IMPORTANTE:** Como o backend está hospedado no Render (plano gratuito), ele pode demorar **até 5 minutos** para iniciar na **primeira requisição**. Recarregue a página após esse tempo, se necessário.
 
 ---
 
 ## ✨ Funcionalidades
 
 - 🔐 **Autenticação de Usuário**
-  - Login/registro com e-mail/senha ou Google.
-    ![Tela de Login](img/Login.png)
+  - Login/registo com e-mail e senha ou autenticação via Google.
+  - ![Tela de Login](img/Login.png)
 
 - 🛍️ **Catálogo de Produtos**
-  - Navegue por uma seleção de produtos com imagens, descrições e preços.
-  - ![tela de produtos](img/product.png)
+  - Lista de produtos com imagens, descrições e preços.
+  - ![Catálogo de Produtos](img/product.png)
+
 - 🛒 **Carrinho de Compras Dinâmico**
-  - Adição, remoção e ajuste de quantidades em tempo real.
-  - ![Tela Do Carrinho](img/cart.png)
+  - Adicione, remova e ajuste a quantidade dos itens em tempo real.
+  - ![Carrinho de Compras](img/cart.png)
+
 - 💳 **Checkout com Stripe**
-  - Pagamento seguro e processo simplificado.
-- 📦 **Histórico & Rastreamento de Pedidos**
-  - Visualize pedidos anteriores e acompanhe entregas.
-- 📱 **Design 100% Responsivo**
-  - Compatível com desktop, tablets e smartphones.
+  - Pagamento seguro com integração Stripe.
+  - ![Tela de Pagamento](img/stripe.png)
+
+- 📦 **Histórico e Rastreamento de Pedidos**
+  - Consulte pedidos anteriores e acompanhe o status de entrega.
+  - ![Histórico de Pedidos](img/pedidos.png)
+
+- 📱 **Design Responsivo**
+  - Totalmente adaptável a desktops, tablets e smartphones.
+  - ![Design Responsivo](img/Resposividade.png)
 
 ---
 
 ## ⚙️ Tecnologias Utilizadas
 
-### 🧠 Frontend
+### 💻 Frontend
 - **React** + **TypeScript**
-- **Vite** para build rápida e leve
-- **Tailwind CSS** para estilização
-- **Framer Motion**, **React Icons**, **Font Awesome** para animações e ícones
+- **Vite** (build rápida e leve)
+- **Tailwind CSS** (estilização moderna e eficiente)
+- **Framer Motion**, **React Icons**, **Font Awesome** (animações e ícones)
 
-### 🔄 Gerenciamento de Estado
+### 🔄 Gestão de Estado
 - **React Context API**
 
 ### 🔔 Notificações
 - **React Toastify**
 
-### 🔐 Autenticação & Backend
+### 🔐 Autenticação
 - **Firebase Authentication**
 
-### 🌐 Comunicação com Backend
+### 🌐 Comunicação com o Backend
 - **Fetch API**
+
+---
+
+## 📂 Estrutura do Projeto
+
+O projeto está organizado da seguinte forma:
+
+```
+/src
+|-- /components     # Componentes reutilizáveis (Navbar, Footer, etc.)
+|-- /contexts       # Contextos da aplicação (CartContext)
+|-- /hooks          # Hooks customizados (useAuth, useProducts)
+|-- /Pages          # Páginas principais da aplicação (Login, Cart, etc.)
+|-- /services       # Funções para comunicação com APIs (cartApi, CEPservice)
+|-- /assets         # Imagens e outros recursos estáticos
+|-- App.tsx         # Componente principal e gestor de rotas
+|-- main.tsx        # Ponto de entrada da aplicação
+|-- firebase.ts     # Configuração do Firebase
+|-- index.css       # Estilos globais com Tailwind
+```
 
 ---
 
 ## 🚀 Começando
 
 ### ✅ Pré-requisitos
-
-- Node.js 14+
-- npm ou yarn
+- Node.js v14 ou superior
+- npm ou yarn instalado
 
 ### 🔧 Instalação
 
-```bash
-# Clone o repositório
-git clone https://github.com/jleandromorais/musicfy.git
+1.  Clone o repositório:
+    ```bash
+    git clone [https://github.com/jleandromorais/musicfy.git](https://github.com/jleandromorais/musicfy.git)
+    ```
 
-# Acesse o diretório
-cd musicfy
+2.  Acesse o diretório:
+    ```bash
+    cd musicfy
+    ```
 
-# Instale as dependências
-npm install
+3.  Instale as dependências:
+    ```bash
+    npm install
+    # ou
+    yarn install
+    ```
+
+### 🔑 Configuração do Firebase
+
+Para que a autenticação e outros serviços do Firebase funcionem, precisa de criar um ficheiro `.env.local` na raiz do projeto e adicionar as suas credenciais do Firebase, baseando-se no ficheiro `src/firebase.ts`.
