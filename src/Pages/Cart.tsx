@@ -14,7 +14,9 @@ import { useAuth } from '../hooks/useAuth'; // 👉 Importa useAuth
 
 const Cart = () => {
   const navigate = useNavigate();
-  const { currentUser, isAuthenticated } = useAuth();
+  const { currentUser } = useAuth();
+  const isAuthenticated = !!currentUser;
+
   const {
     cartItems,
     removeFromCart,
@@ -24,9 +26,8 @@ const Cart = () => {
     changeCartItemQuantity
   } = useCart();
 
-  const cartId = localStorage.getItem("cartId");
+  const cartId = localStorage.getItem('cartId');
 
-  // 🧹 Reseta carrinho apenas se NÃO estiver logado
   useEffect(() => {
     if (!isAuthenticated) {
       localStorage.removeItem('cartId');
