@@ -1,7 +1,6 @@
 // src/Pages/Cart.tsx
 import { useCart, type CartItem } from '../contexts/CartContext';
 import { FaTrash, FaShoppingBag } from 'react-icons/fa';
-import { useEffect } from 'react';
 import {
   DeletarItem,
   incrementarQuantidade,
