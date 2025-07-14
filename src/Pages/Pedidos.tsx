@@ -130,30 +130,40 @@ const OrdersPage: React.FC = () => {
   }, [currentUser, authLoading, navigate, fetchOrders]);
 
   // Função para cancelar pedido
-  const handleCancelOrder = async (orderId: string) => {
-    if (!window.confirm("Tem certeza que deseja cancelar este pedido?")) return;
+ // ... (resto do seu código)
 
-    try {
-      const response = await fetch(`https://back-musicfy-origin-3.onrender.com/api/orders/${orderId}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'CANCELLED' }),
-      });
+  // Função para cancelar pedido
+  const handleCancelOrder = async (orderId: string) => {
+    if (!window.confirm("Tem certeza que deseja cancelar este pedido?")) return;
 
-      if (response.ok) {
-        // Remove o pedido cancelado da lista localmente
-        setOrders(prevOrders => prevOrders.filter(o => o.id !== orderId));
-        toast.success('Pedido cancelado com sucesso!');
-      } else {
-        const errorData = await response.json();
-        toast.error(`Erro ao cancelar pedido: ${errorData.message || 'Erro desconhecido'}`);
-      }
-    } catch (err) {
-      toast.error('Erro ao cancelar pedido. Tente novamente mais tarde.');
-      console.error(err);
-    }
-  };
+    try {
+      const response = await fetch(`https://back-musicfy-origin-3.onrender.com/api/orders/${orderId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'CANCELLED' }),
+      });
 
+      if (response.ok) {
+        // Em vez de filtrar, atualize o status do pedido na lista
+        setOrders(prevOrders =>
+          prevOrders.map(order =>
+            order.id === orderId
+              ? { ...order, deliveryStatus: 'Cancelado' } // Atualiza o status
+              : order
+          )
+        );
+        toast.success('Pedido cancelado com sucesso!');
+      } else {
+        const errorData = await response.json();
+        toast.error(`Erro ao cancelar pedido: ${errorData.message || 'Erro desconhecido'}`);
+      }
+    } catch (err) {
+      toast.error('Erro ao cancelar pedido. Tente novamente mais tarde.');
+      console.error(err);
+    }
+  };
+
+// ... (resto do seu código)
   if (authLoading || loading) {
     return <div className="min-h-screen flex items-center justify-center bg-[#1A002F] text-white">Carregando seus pedidos...</div>;
   }
