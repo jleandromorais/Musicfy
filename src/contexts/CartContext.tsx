@@ -19,7 +19,7 @@ import {
   obterCarrinhoPorUsuario, // NOVO
   mergeCarts // NOVO
 } from '../services/cartApi';
-import type { ICartItem, ICart } from '../types/cart'; // Certifique-se que ICart está aqui também
+import type { ICartItem} from '../types/cart'; // Certifique-se que ICart está aqui também
 
 // Ajuste o tipo Product para corresponder ao que você recebe do componente de produto
 type ProductInfo = {
