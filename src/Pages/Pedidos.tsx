@@ -74,7 +74,6 @@ const OrdersPage: React.FC = () => {
 
     try {
       console.log('Buscando pedidos para usuário:', currentUser.firebaseUid);
-
       setLoading(true);
       setError(null);
 
@@ -84,7 +83,6 @@ const OrdersPage: React.FC = () => {
       }
 
       const data: OrderDTO[] = await response.json();
-
       console.log('Pedidos recebidos do backend:', data);
 
       const mappedOrders: Order[] = data.map(orderDto => ({
@@ -118,10 +116,8 @@ const OrdersPage: React.FC = () => {
   }, [currentUser]);
 
   useEffect(() => {
-    console.log('authLoading:', authLoading, 'currentUser:', currentUser);
     if (!authLoading) {
       if (!currentUser) {
-        console.log('Usuário não logado, redirecionando para login');
         navigate('/login');
       } else {
         fetchOrders();
@@ -129,41 +125,35 @@ const OrdersPage: React.FC = () => {
     }
   }, [currentUser, authLoading, navigate, fetchOrders]);
 
-  // Função para cancelar pedido
- // ... (resto do seu código)
+  const handleCancelOrder = async (orderId: string) => {
+    if (!window.confirm("Tem certeza que deseja cancelar este pedido?")) return;
 
-  // Função para cancelar pedido
-  const handleCancelOrder = async (orderId: string) => {
-    if (!window.confirm("Tem certeza que deseja cancelar este pedido?")) return;
+    try {
+      const response = await fetch(`https://back-musicfy-origin-3.onrender.com/api/orders/${orderId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'CANCELLED' }),
+      });
 
-    try {
-      const response = await fetch(`https://back-musicfy-origin-3.onrender.com/api/orders/${orderId}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'CANCELLED' }),
-      });
+      if (response.ok) {
+        setOrders(prevOrders =>
+          prevOrders.map(order =>
+            order.id === orderId
+              ? { ...order, deliveryStatus: 'Cancelado' }
+              : order
+          )
+        );
+        toast.success('Pedido cancelado com sucesso!');
+      } else {
+        const errorData = await response.json();
+        toast.error(`Erro ao cancelar pedido: ${errorData.message || 'Erro desconhecido'}`);
+      }
+    } catch (err) {
+      toast.error('Erro ao cancelar pedido. Tente novamente mais tarde.');
+      console.error(err);
+    }
+  };
 
-      if (response.ok) {
-        // Em vez de filtrar, atualize o status do pedido na lista
-        setOrders(prevOrders =>
-          prevOrders.map(order =>
-            order.id === orderId
-              ? { ...order, deliveryStatus: 'Cancelado' } // Atualiza o status
-              : order
-          )
-        );
-        toast.success('Pedido cancelado com sucesso!');
-      } else {
-        const errorData = await response.json();
-        toast.error(`Erro ao cancelar pedido: ${errorData.message || 'Erro desconhecido'}`);
-      }
-    } catch (err) {
-      toast.error('Erro ao cancelar pedido. Tente novamente mais tarde.');
-      console.error(err);
-    }
-  };
-
-// ... (resto do seu código)
   if (authLoading || loading) {
     return <div className="min-h-screen flex items-center justify-center bg-[#1A002F] text-white">Carregando seus pedidos...</div>;
   }
@@ -175,7 +165,6 @@ const OrdersPage: React.FC = () => {
   return (
     <div className="bg-[#1A002F] text-white min-h-screen p-4 sm:p-6 lg:p-8 relative overflow-hidden">
       <div className="absolute top-1/2 left-1/2 w-[1000px] h-[1000px] rounded-full bg-[#35589A] opacity-15 filter blur-3xl transform -translate-x-1/2 -translate-y-1/2 z-0"></div>
-
       <div className="relative z-10 max-w-4xl mx-auto">
         <Link
           to="/"
@@ -184,11 +173,9 @@ const OrdersPage: React.FC = () => {
           <FaArrowLeft />
           Voltar para a Loja
         </Link>
-
         <h1 className="text-3xl sm:text-4xl font-bold text-orange-500 mb-8 flex items-center gap-4">
           <FaShoppingBag /> Meus Pedidos
         </h1>
-
         {orders.length === 0 ? (
           <div className="text-center py-16 px-6 bg-gray-800 rounded-lg">
             <FaBoxOpen className="text-6xl text-gray-500 mx-auto mb-4" />
@@ -204,7 +191,12 @@ const OrdersPage: React.FC = () => {
                   : 'A ser definido';
 
                 return (
-                  <div key={order.id} className="bg-gray-800 rounded-lg shadow-xl p-6">
+                  <div
+                    key={order.id}
+                    className={`bg-gray-800 rounded-lg shadow-xl p-6 transition-opacity ${
+                      order.deliveryStatus === 'Cancelado' ? 'opacity-60' : ''
+                    }`}
+                  >
                     <div className="flex flex-wrap justify-between items-center border-b border-gray-700 pb-3 mb-3 gap-2">
                       <div>
                         <h2 className="text-lg font-bold">Pedido #{order.id}</h2>
@@ -216,7 +208,6 @@ const OrdersPage: React.FC = () => {
                         R$ {order.totalPrice.toFixed(2)}
                       </div>
                     </div>
-
                     <div className="space-y-2">
                       {order.items.map((item, index) => (
                         <div key={index} className="flex justify-between text-gray-300">
@@ -230,22 +221,20 @@ const OrdersPage: React.FC = () => {
                         <span>Frete: {order.shipping?.name}</span>
                       </div>
                     </div>
-
-                    <div className="flex items-center gap-2 text-green-400 text-sm mt-4 font-semibold">
-                      <FaCalendarAlt />
-                      <span>{estimatedDelivery}</span>
-                    </div>
-
-                    {/* Botão Cancelar Pedido */}
+                    {order.deliveryStatus !== 'Cancelado' && (
+                        <div className="flex items-center gap-2 text-green-400 text-sm mt-4 font-semibold">
+                            <FaCalendarAlt />
+                            <span>{estimatedDelivery}</span>
+                        </div>
+                    )}
                     {order.deliveryStatus !== 'Cancelado' && order.deliveryStatus !== 'Entregue' && (
                       <button
                         onClick={() => handleCancelOrder(order.id)}
-                        className="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded"
+                        className="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded transition-colors"
                       >
                         Cancelar Pedido
                       </button>
                     )}
-
                     <DeliveryStatus
                       currentStatus={order.deliveryStatus}
                       deliveryPerson={order.deliveryPerson}

@@ -1,7 +1,5 @@
-// src/components/DeliveryStatus.tsx
-
 import React from 'react';
-import { FaBox, FaCheckCircle, FaClipboardCheck, FaRoute, FaTruck } from 'react-icons/fa';
+import { FaBox, FaCheckCircle, FaClipboardCheck, FaRoute, FaTruck, FaTimesCircle } from 'react-icons/fa';
 
 // Definimos os possíveis status e seus ícones correspondentes
 const deliverySteps = [
@@ -22,6 +20,20 @@ interface DeliveryStatusProps {
 }
 
 const DeliveryStatus: React.FC<DeliveryStatusProps> = ({ currentStatus, deliveryPerson }) => {
+  // --- INÍCIO DA MODIFICAÇÃO ---
+
+  // Se o pedido estiver cancelado, mostre uma mensagem específica e pare a execução aqui.
+  if (currentStatus === 'Cancelado') {
+    return (
+      <div className="mt-6 flex flex-col items-center text-center p-4 border-t border-red-500/30">
+        <FaTimesCircle className="text-red-500 text-5xl mb-3" />
+        <h3 className="font-bold text-red-500 text-lg">Este pedido foi cancelado</h3>
+      </div>
+    );
+  }
+
+  // --- FIM DA MODIFICAÇÃO ---
+
   const currentStepIndex = deliverySteps.findIndex(step => step.name === currentStatus);
 
   return (
