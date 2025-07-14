@@ -18,10 +18,8 @@ import {
   LimparCarrinho,
   obterCarrinhoPorUsuario, // NOVO
   mergeCarts // NOVO
-} from '../services/cartApi'; // Certifique-se de que esses imports estão corretos
-// src/contexts/CartContext.tsx
-import type {  ICartItem } from '../types/cart'; // AQUI: Adicione 'type'
-// ... restante do código // Importe os novos tipos
+} from '../services/cartApi';
+import type { ICartItem, ICart } from '../types/cart'; // Certifique-se que ICart está aqui também
 
 // Ajuste o tipo Product para corresponder ao que você recebe do componente de produto
 type ProductInfo = {
@@ -59,7 +57,7 @@ const STORAGE_KEY = 'cartItems';
 const CART_ID_STORAGE_KEY = 'cartId';
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
-  const { currentUser, loading: authLoading } = useAuth(); // Adicione authLoading
+  const { currentUser, loading: authLoading } = useAuth();
   const [cartItems, setCartItems] = useState<ICartItem[]>(() => {
     if (typeof window === 'undefined') return [];
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -72,12 +70,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     return saved ? parseInt(saved, 10) : null;
   });
 
-  // Salva o carrinho localmente sempre que ele muda
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(cartItems));
   }, [cartItems]);
 
-  // Salva o ID do carrinho no localStorage
   useEffect(() => {
     if (cartId !== null) {
       localStorage.setItem(CART_ID_STORAGE_KEY, cartId.toString());
@@ -96,21 +92,31 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
       if (currentUser?.id) {
         // Usuário logado
-        console.log("Usuário logado. Sincronizando carrinho...");
+        // CORREÇÃO 1: Garante que userId é um número limpo para a chamada API
+        const userIdNumber = Number(currentUser.id);
+        if (isNaN(userIdNumber)) {
+            console.error("Erro: currentUser.id não é um número válido.", currentUser.id);
+            // Decide como lidar: talvez limpar carrinho e redirecionar para login
+            setCartItems([]);
+            setCartId(null);
+            localStorage.removeItem(STORAGE_KEY);
+            localStorage.removeItem(CART_ID_STORAGE_KEY);
+            return;
+        }
+
+        console.log("Usuário logado. Sincronizando carrinho para userId:", userIdNumber);
         try {
-          const backendCart = await obterCarrinhoPorUsuario(currentUser.id);
+          const backendCart = await obterCarrinhoPorUsuario(userIdNumber); // Use o userIdNumber corrigido
 
           if (backendCart) {
             // Carrinho existe no backend para este usuário
             if (tempCartItems.length > 0) {
-              // Existem itens temporários, mesclar com o carrinho do backend
               console.log("Mesclando carrinho temporário com carrinho do backend...");
               const mergedCart = await mergeCarts(backendCart.id, tempCartItems);
               setCartItems(mergedCart.items);
               setCartId(mergedCart.id);
-              localStorage.removeItem(STORAGE_KEY); // Limpa o carrinho temporário local
+              localStorage.removeItem(STORAGE_KEY);
             } else {
-              // Não há itens temporários, apenas carrega o carrinho do backend
               console.log("Carregando carrinho existente do backend...");
               setCartItems(backendCart.items);
               setCartId(backendCart.id);
@@ -118,25 +124,31 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           } else {
             // Carrinho NÃO existe no backend para este usuário
             if (tempCartItems.length > 0) {
-              // Criar um novo carrinho no backend com os itens temporários
               console.log("Criando novo carrinho no backend com itens temporários...");
-              const newBackendCart = await criarCarrinhoComItem({
-                productId: tempCartItems[0].productId, // A API de criarCarrinhoComItem espera um item inicial
+              // CORREÇÃO 2: A API de criarCarrinhoComItem precisa do userId para criar o carrinho correto
+              const newBackendCartResponse = await criarCarrinhoComItem({
+                productId: tempCartItems[0].productId,
                 quantity: tempCartItems[0].quantity,
-                userId: currentUser.id
+                userId: userIdNumber // Passe o userId aqui
               });
-              // Se houver mais itens, adicione-os um por um (ou ajuste a API de criação)
+
+              // CORREÇÃO 3: Acesse 'cartId' da resposta, não 'id'
+              const newCartId = (newBackendCartResponse as any).cartId; // Use 'as any' temporariamente se o tipo de retorno não for preciso
+              if (newCartId === undefined || newCartId === null) {
+                  throw new Error("ID do carrinho não recebido ao criar novo carrinho.");
+              }
+
+              // Adicione os itens restantes, se houver
               for (let i = 1; i < tempCartItems.length; i++) {
-                await adicionarItemAoCarrinho(newBackendCart.id.toString(), {
+                await adicionarItemAoCarrinho(newCartId.toString(), {
                   productId: tempCartItems[i].productId,
                   quantity: tempCartItems[i].quantity
                 });
               }
-              setCartItems(tempCartItems); // Mantém os itens locais que foram enviados
-              setCartId(newBackendCart.id);
-              localStorage.removeItem(STORAGE_KEY); // Limpa o carrinho temporário local
+              setCartItems(tempCartItems);
+              setCartId(newCartId); // Use o newCartId corrigido
+              localStorage.removeItem(STORAGE_KEY);
             } else {
-              // Não há itens temporários e nem carrinho de backend, limpa tudo
               console.log("Nenhum carrinho para sincronizar, limpando local...");
               setCartItems([]);
               setCartId(null);
@@ -146,8 +158,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           }
         } catch (error) {
           console.error("Erro durante a sincronização do carrinho:", error);
-          // Em caso de erro na sincronização, pode-se decidir exibir uma mensagem
-          // e/ou limpar o carrinho local para evitar dados inconsistentes.
           setCartItems([]);
           setCartId(null);
           localStorage.removeItem(STORAGE_KEY);
@@ -156,15 +166,13 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       } else {
         // Usuário deslogado
         console.log("Usuário deslogado. Mantendo carrinho temporário ou vazio...");
-        // Garante que o cartId do backend não está no localStorage para usuários deslogados
         setCartId(null);
         localStorage.removeItem(CART_ID_STORAGE_KEY);
-        // O `cartItems` local já reflete o localStorage para convidados
       }
     };
 
     synchronizeCart();
-  }, [currentUser?.id, authLoading]); // Dependências do useEffect
+  }, [currentUser?.id, authLoading]);
 
   // Demais funções do contexto (adaptadas para interagir com o backend)
 
@@ -178,24 +186,35 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     };
 
     try {
-      if (currentUser?.id && cartId) {
-        // Usuário logado e já tem um cartId no backend
-        await adicionarItemAoCarrinho(cartId.toString(), { productId: productInfo.id, quantity });
-        // Atualiza o estado local após o sucesso da API
-        setCartItems(prev => {
-          const found = prev.find(i => i.productId === productInfo.id);
-          if (found) {
-            return prev.map(i =>
-              i.productId === productInfo.id ? { ...i, quantity: i.quantity + quantity } : i
-            );
+      if (currentUser?.id) { // Agora currentUser.id é garantido ser numérico pela sincronização
+        const userIdNumber = Number(currentUser.id); // Re-converte para garantir
+        if (isNaN(userIdNumber)) { // Verificação redundante mas segura
+            console.error("Erro: currentUser.id não é um número válido ao adicionar ao carrinho.");
+            return;
+        }
+
+        if (cartId) {
+          // Usuário logado e já tem um cartId no backend
+          await adicionarItemAoCarrinho(cartId.toString(), { productId: productInfo.id, quantity });
+          setCartItems(prev => {
+            const found = prev.find(i => i.productId === productInfo.id);
+            if (found) {
+              return prev.map(i =>
+                i.productId === productInfo.id ? { ...i, quantity: i.quantity + quantity } : i
+              );
+            }
+            return [...prev, { ...itemToAdd }];
+          });
+        } else {
+          // Usuário logado, mas ainda não tem cartId (carrinho novo para este usuário)
+          const newBackendCartResponse = await criarCarrinhoComItem({ productId: productInfo.id, quantity, userId: userIdNumber });
+          const newCartId = (newBackendCartResponse as any).cartId; // Use 'cartId'
+          if (newCartId === undefined || newCartId === null) {
+              throw new Error("ID do carrinho não recebido ao criar novo carrinho durante addToCart.");
           }
-          return [...prev, { ...itemToAdd }];
-        });
-      } else if (currentUser?.id && !cartId) {
-        // Usuário logado, mas ainda não tem cartId (carrinho novo para este usuário)
-        const response = await criarCarrinhoComItem({ productId: productInfo.id, quantity, userId: currentUser.id });
-        setCartId(response.id); // Assume que a resposta de criarCarrinhoComItem inclui o ID do carrinho
-        setCartItems([itemToAdd]); // Inicia o carrinho localmente com o item adicionado
+          setCartId(newCartId);
+          setCartItems([itemToAdd]);
+        }
       } else {
         // Usuário não logado (convidado), apenas atualiza o estado local e localStorage
         setCartItems(prev => {
@@ -210,8 +229,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       }
     } catch (error) {
       console.error("Erro ao adicionar ao carrinho:", error);
-      // Aqui você pode adicionar um toast de erro ou outra notificação
-      throw error; // Propaga o erro
+      throw error;
     }
   }, [currentUser, cartId]);
 
@@ -238,8 +256,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       if (cartId) {
-        // Lógica para chamar API de update ou usar increment/decrement
-        // Dado que você tem incrementar/decrementar, pode ser mais fácil chamá-los
         const currentItem = cartItems.find(item => item.productId === productId);
         if (currentItem) {
           if (newQuantity > currentItem.quantity) {
@@ -264,7 +280,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       console.error("Erro ao atualizar quantidade:", error);
       throw error;
     }
-  }, [cartId, cartItems, removeFromCart]); // Adicionado cartItems e removeFromCart
+  }, [cartId, cartItems, removeFromCart]);
 
   const changeCartItemQuantity = useCallback(async (productInfo: ProductInfo, newQuantity: number) => {
     if (newQuantity <= 0) {
@@ -282,25 +298,17 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       if (cartId) {
-        // Similar ao updateQuantity, você pode precisar de uma API específica ou usar increment/decrement repetidamente
-        // Ou o backend pode ter um endpoint para 'setar' quantidade diretamente
-        // Por simplicidade aqui, estou apenas atualizando localmente após a 'chamada' de API imaginada
-        // Você precisaria de um endpoint no backend para updateQuantity diretamente ou fazer N chamadas
         const currentItem = cartItems.find(item => item.productId === productInfo.id);
         if (currentItem) {
           if (newQuantity > currentItem.quantity) {
-            // Apenas para simular, na prática você chamaria uma API de incremento N vezes ou uma API de set
-            await incrementarQuantidade(cartId.toString(), productInfo.id); // Chamada única, não cobre N incrementos
+            await incrementarQuantidade(cartId.toString(), productInfo.id);
           } else if (newQuantity < currentItem.quantity) {
-            // Apenas para simular
-            await decrementarQuantidade(cartId.toString(), productInfo.id); // Chamada única, não cobre N decrementos
+            await decrementarQuantidade(cartId.toString(), productInfo.id);
           }
         } else {
-          // Se o item não está no carrinho mas newQuantity > 0, significa que está sendo adicionado
           await adicionarItemAoCarrinho(cartId.toString(), { productId: productInfo.id, quantity: newQuantity });
         }
         
-        // Atualiza o estado local, assumindo que a API foi bem-sucedida
         setCartItems(prev => {
           const found = prev.find(i => i.productId === productInfo.id);
           if (found) {
@@ -314,7 +322,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         });
 
       } else {
-        // Usuário deslogado, apenas local
         setCartItems(prev => {
           const found = prev.find(i => i.productId === productInfo.id);
           if (found) {
@@ -331,7 +338,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       console.error("Erro ao alterar quantidade do item do carrinho:", error);
       throw error;
     }
-  }, [cartId, cartItems, removeFromCart]); // Adicionado cartItems e removeFromCart
+  }, [cartId, cartItems, removeFromCart]);
 
 
   const clearCart = useCallback(async () => {
