@@ -9,7 +9,7 @@ const opcoesEntrega = [
   { id: 'expresso', name: 'Envio Expresso', price: 30.0, estimatedTime: '1-3 dias úteis' },
   { id: 'retirada', name: 'Retirada Local', price: 0.0, estimatedTime: 'Pronto em 24 horas' },
 ];
-
+//teste
 const CheckoutPage: React.FC = () => {
   const { cartId, cartItems, totalPrice } = useCart();
   const { currentUser } = useAuth();
