@@ -1,18 +1,32 @@
-// src/Pages/Cart.tsx
+import { useState, useEffect } from 'react';
 import { useCart } from '../contexts/CartContext';
-import type { ICartItem } from '../types/cart'; // Adicione esta nova linha para importar o tipo correto
+import type { ICartItem } from '../types/cart';
 import { FaTrash, FaShoppingBag } from 'react-icons/fa';
 import { DeletarItem, incrementarQuantidade, decrementarQuantidade, LimparCarrinho } from '../services/cartApi';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const Cart = () => {
     const navigate = useNavigate();
     const { cartItems, removeFromCart, clearCart, cartCount, totalPrice, changeCartItemQuantity } = useCart();
     const cartId = localStorage.getItem("cartId");
+    const [isLoading, setIsLoading] = useState(true);
 
-    // Se não houver cartId, exibe uma mensagem específica
+    useEffect(() => {
+        const timer = setTimeout(() => setIsLoading(false), 1200);
+        return () => clearTimeout(timer);
+    }, []);
+
+    if (isLoading) {
+        return (
+            <div className="bg-[#1A002F] text-white min-h-screen flex items-center justify-center">
+                <LoadingSpinner size="lg" label="Carregando carrinho..." />
+            </div>
+        );
+    }
+
     if (!cartId) {
         return (
             <div className="bg-[#1A002F] text-white min-h-screen p-4 sm:p-6 lg:p-8 flex items-center justify-center">
@@ -32,9 +46,8 @@ const Cart = () => {
         );
     }
 
-    // Função para lidar com mudança de quantidade
-    const handleQuantityChange = async (item: ICartItem, newQuantity: number) => { // CORRIGIDO AQUI: item: ICartItem
-        if (newQuantity < 1) return; // não permite zero ou negativo
+    const handleQuantityChange = async (item: ICartItem, newQuantity: number) => {
+        if (newQuantity < 1) return;
 
         try {
             if (newQuantity > item.quantity) {
@@ -43,8 +56,6 @@ const Cart = () => {
                 await decrementarQuantidade(cartId, item.productId);
             }
 
-            // O `changeCartItemQuantity` no CartContext espera ProductInfo,
-            // então mapeamos os campos relevantes de ICartItem para ProductInfo
             changeCartItemQuantity({
                 id: item.productId,
                 name: item.name,
@@ -163,10 +174,7 @@ const Cart = () => {
                                                 return;
                                             }
 
-                                            // Limpa carrinho no backend
-                                            await LimparCarrinho(cartIdNum);
-
-                                            // Limpa carrinho local
+                                                            await LimparCarrinho(cartIdNum);
                                             clearCart();
 
                                             toast.success("Carrinho limpo com sucesso");
