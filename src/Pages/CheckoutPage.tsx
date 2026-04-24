@@ -89,7 +89,7 @@ const CheckoutPage: React.FC = () => {
     };
 
     try {
-      const response = await fetch('https://back-musicfy-origin-3.onrender.com/api/checkout/create-session', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/checkout/create-session`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

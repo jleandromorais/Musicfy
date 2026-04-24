@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Variáveis de ambiente (nunca commitar segredos)
+.env
+.env.production
+.env.staging

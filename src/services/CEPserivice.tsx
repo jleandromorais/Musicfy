@@ -32,7 +32,7 @@ export const buscarDadosCEP = async (cep: string) => {
 
 export const criarEndereco = async (endereco: Endereco) => {
   try {
-    const response = await fetch('https://back-musicfy-origin-3.onrender.com/enderecos', {
+    const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/enderecos`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(endereco),

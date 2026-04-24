@@ -20,7 +20,7 @@ export const useAuth = (): AuthContextType => {
   return context;
 };
 
-const BASE_API = 'https://back-musicfy-origin-3.onrender.com/api/usuario';
+const BASE_API = `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/usuario`;
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [currentUser, setCurrentUser] = useState<AppUser | null>(null);

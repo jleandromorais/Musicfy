@@ -1,7 +1,7 @@
 import type { ICart, ICartItem } from '../types/cart';
 import { handleApiResponse, handleError } from './errorHandler';
 
-const BASE_URL = "https://back-musicfy-origin-3.onrender.com/api/carrinho";
+const BASE_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/carrinho`;
 
 export const criarCarrinhoComItem = async ({
   productId,
