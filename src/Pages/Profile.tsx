@@ -44,7 +44,10 @@ const Profile: React.FC = () => {
   const fetchOrders = useCallback(async () => {
     if (!firebaseUser?.uid) return;
     try {
-      const res = await fetch(`${API}/orders/user/${firebaseUser.uid}`);
+      const idToken = await auth.currentUser?.getIdToken();
+      const res = await fetch(`${API}/orders/user/${firebaseUser.uid}`, {
+        headers: { Authorization: `Bearer ${idToken}` },
+      });
       if (res.ok) setOrders(await res.json());
     } finally {
       setLoadingOrders(false);
@@ -62,12 +65,16 @@ const Profile: React.FC = () => {
 
   const saveName = async () => {
     const trimmed = newName.trim();
-    if (!trimmed || !currentUser?.id) return;
+    if (!trimmed || !currentUser?.id || !auth.currentUser) return;
     setSavingName(true);
     try {
+      const idToken = await auth.currentUser.getIdToken();
       const res = await fetch(`${API}/usuario/${currentUser.id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`,
+        },
         body: JSON.stringify({ fullName: trimmed }),
       });
       if (!res.ok) throw new Error();

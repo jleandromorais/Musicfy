@@ -5,6 +5,7 @@ import { FaArrowLeft, FaBoxOpen, FaShoppingBag, FaCalendarAlt } from 'react-icon
 import DeliveryStatus from '../components/DeliveryStatus';
 import { calculateEstimatedDelivery } from '../services/dateService';
 import { toast } from 'react-toastify';
+import { auth } from '../firebase';
 
 // Tipos vindos do backend
 type OrderItemDTO = {
@@ -77,7 +78,10 @@ const OrdersPage: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/orders/user/${currentUser.firebaseUid}`);
+      const idToken = await auth.currentUser?.getIdToken();
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/orders/user/${currentUser.firebaseUid}`, {
+        headers: { Authorization: `Bearer ${idToken}` },
+      });
       if (!response.ok) {
         throw new Error(`Erro ao buscar pedidos: ${response.statusText}`);
       }
