@@ -1,7 +1,7 @@
 // src/components/Footer.tsx
 
 import { FaFacebook, FaInstagram, FaTwitter, FaLinkedin } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const Footer = () => {
   const navigate = useNavigate();
@@ -70,8 +70,14 @@ const Footer = () => {
         </div>
 
         {/* Linha de Copyright */}
-        <div className="mt-12 border-t border-gray-800 pt-6 text-center text-gray-500 text-sm">
+        <div className="mt-12 border-t border-gray-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-gray-500 text-sm">
           <p>&copy; {new Date().getFullYear()} Musicfy. Todos os direitos reservados.</p>
+          <Link
+            to="/admin/login"
+            className="text-gray-700 hover:text-gray-500 transition-colors text-xs"
+          >
+            Área Administrativa
+          </Link>
         </div>
       </div>
     </footer>
