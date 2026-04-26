@@ -164,7 +164,10 @@ const Produtos = () => {
                   className="flex-shrink-0 w-72 transform transition-transform duration-300 hover:scale-105 hover:shadow-xl group relative z-0 hover:z-10"
                 >
                   <div className="w-full border border-white bg-gradient-to-t from-[#333333] to-[#2E2E2E] rounded-3xl overflow-hidden shadow-lg h-full">
-                    <div className="bg-gradient-to-t from-drak-gray to-[#2E2E2E] p-6 flex items-center justify-center h-48 rounded-t-3xl">
+                    <div
+                      className="bg-gradient-to-t from-drak-gray to-[#2E2E2E] p-6 flex items-center justify-center h-48 rounded-t-3xl cursor-pointer"
+                      onClick={() => navigate(`/products/${produto.id}`)}
+                    >
                       <img
                         src={resolveImage(produto)}
                         alt={produto.nome}
@@ -173,7 +176,12 @@ const Produtos = () => {
                     </div>
 
                     <div className="p-6">
-                      <h3 className="text-lg font-bold mb-1">{produto.nome}</h3>
+                      <h3
+                        className="text-lg font-bold mb-1 cursor-pointer hover:text-orange-400 transition-colors"
+                        onClick={() => navigate(`/products/${produto.id}`)}
+                      >
+                        {produto.nome}
+                      </h3>
                       {produto.descricao && (
                         <h4 className="text-sm text-gray-400 mb-3">{produto.descricao}</h4>
                       )}

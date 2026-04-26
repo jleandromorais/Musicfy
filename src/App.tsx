@@ -4,6 +4,7 @@ import PagP from './Pages/pagPrincipal';
 import AuthPage from './Pages/Login';
 import Register from './Pages/Register';
 import Products from './components/Product';
+import ProductDetail from './Pages/ProductDetail';
 import Cart from './Pages/Cart';
 import CheckoutPage from './Pages/CheckoutPage';
 import { ToastContainer } from 'react-toastify';
@@ -30,6 +31,7 @@ function App() {
           <Route path="/login" element={<AuthPage />} />
           <Route path="/register" element={<Register />} />
           <Route path="/products" element={<Products />} />
+          <Route path="/products/:id" element={<ProductDetail />} />
           <Route path="/success" element={<SuccessPage />} />
 
           {/* Rotas protegidas — exigem autenticação do usuário */}
