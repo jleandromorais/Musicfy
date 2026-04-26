@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import {
   FaBox, FaTrash, FaEdit, FaPlus, FaSearch,
   FaSignOutAlt, FaBoxOpen, FaExclamationTriangle, FaTachometerAlt, FaChartBar,
+  FaShoppingBag, FaUsers,
 } from 'react-icons/fa';
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
@@ -156,12 +157,18 @@ const AdminDashboard: React.FC = () => {
               {icon} {label}
             </button>
           ))}
-          <span className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 cursor-not-allowed">
-            📦 Pedidos <span className="text-xs ml-auto">em breve</span>
-          </span>
-          <span className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 cursor-not-allowed">
-            👥 Usuários <span className="text-xs ml-auto">em breve</span>
-          </span>
+          <Link
+            to="/admin/orders"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-400 hover:text-white hover:bg-white/5 transition-all"
+          >
+            <FaShoppingBag /> Pedidos
+          </Link>
+          <Link
+            to="/admin/users"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-400 hover:text-white hover:bg-white/5 transition-all"
+          >
+            <FaUsers /> Usuários
+          </Link>
         </nav>
 
         <div className="p-4 border-t border-white/10">

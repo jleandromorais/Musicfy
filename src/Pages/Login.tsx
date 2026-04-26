@@ -282,7 +282,7 @@ const AuthPage = () => {
           </div>
         )}
 
-        <div className="text-sm text-center">
+        <div className="text-sm text-center space-y-2">
           <button
             onClick={toggleView}
             className="font-medium text-orange-400 hover:text-orange-500 transition-colors"
@@ -292,6 +292,16 @@ const AuthPage = () => {
               ? "Don't have an account? Sign up"
               : "Already have an account? Sign in"}
           </button>
+          {isLoginView && (
+            <div>
+              <Link
+                to="/register"
+                className="text-gray-400 hover:text-orange-400 transition-colors"
+              >
+                Criar conta com e-mail e senha →
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -15,6 +15,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 import AdminLogin from './Pages/Admin/AdminLogin';
 import AdminDashboard from './Pages/Admin/AdminDashboard';
 import ProductForm from './Pages/Admin/ProductForm';
+import AdminOrders from './Pages/Admin/AdminOrders';
+import AdminUsers from './Pages/Admin/AdminUsers';
 import { AdminAuthProvider } from './contexts/AdminAuthContext';
 import AdminProtectedRoute from './components/AdminProtectedRoute';
 
@@ -44,6 +46,8 @@ function App() {
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/products/new" element={<ProductForm />} />
             <Route path="/admin/products/:id/edit" element={<ProductForm />} />
+            <Route path="/admin/orders" element={<AdminOrders />} />
+            <Route path="/admin/users" element={<AdminUsers />} />
           </Route>
         </Routes>
 
