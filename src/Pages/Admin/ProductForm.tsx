@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import {
   FaArrowLeft, FaUpload, FaTimes, FaSignOutAlt, FaBox, FaTachometerAlt,
+  FaShoppingBag, FaUsers,
 } from 'react-icons/fa';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
 
@@ -170,15 +171,18 @@ const ProductForm: React.FC = () => {
           </span>
         </div>
         <nav className="flex-1 p-4 space-y-1">
-          <Link
-            to="/admin/dashboard"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-400 hover:text-white hover:bg-white/10 transition-all"
-          >
+          <Link to="/admin/dashboard" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-400 hover:text-white hover:bg-white/10 transition-all">
             <FaTachometerAlt /> Dashboard
           </Link>
           <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold bg-orange-600/20 text-orange-400 border border-orange-500/20">
             <FaBox /> Produtos
           </div>
+          <Link to="/admin/orders" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-400 hover:text-white hover:bg-white/10 transition-all">
+            <FaShoppingBag /> Pedidos
+          </Link>
+          <Link to="/admin/users" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-400 hover:text-white hover:bg-white/10 transition-all">
+            <FaUsers /> Usuários
+          </Link>
         </nav>
         <div className="p-4 border-t border-white/10">
           <div className="flex items-center gap-3 mb-3">

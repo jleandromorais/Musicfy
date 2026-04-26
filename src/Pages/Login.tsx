@@ -11,7 +11,7 @@ import {
   updateProfile,
 } from 'firebase/auth';
 import { auth } from '../firebase';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import type { User } from 'firebase/auth';
 
@@ -25,6 +25,8 @@ const AuthPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const successMessage = (location.state as any)?.successMessage ?? null;
   const { currentUser, loading: carregandoUsuario } = useAuth();
 
   const [fullName, setFullName] = useState('');
@@ -212,6 +214,12 @@ const AuthPage = () => {
             {isLoginView ? 'Sign in to continue' : 'Get started with your account'}
           </p>
         </div>
+
+        {successMessage && (
+          <div className="p-3 bg-green-500/10 text-green-400 text-sm rounded-md border border-green-500/20 text-center">
+            {successMessage}
+          </div>
+        )}
 
         <form className="space-y-6" onSubmit={handleEmailPasswordSubmit}>
           {!isLoginView && (
