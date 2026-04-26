@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { FaSignOutAlt, FaBox, FaTachometerAlt, FaShoppingBag, FaUsers, FaSearch } from 'react-icons/fa';
+import { FaSignOutAlt, FaBox, FaTachometerAlt, FaShoppingBag, FaUsers } from 'react-icons/fa';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
 
 const API = `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api`;

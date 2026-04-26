@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  FaUser, FaEnvelope, FaShoppingBag, FaShoppingCart,
+  FaEnvelope, FaShoppingBag, FaShoppingCart,
   FaEdit, FaCheck, FaTimes, FaSignOutAlt, FaCalendarAlt,
 } from 'react-icons/fa';
 import { toast } from 'react-toastify';

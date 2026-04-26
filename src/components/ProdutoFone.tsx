@@ -106,7 +106,7 @@ type Unidade = typeof unidades[number];
         const response = await criarCarrinhoComItem({
           productId: produto.id,
           quantity: 1
-        });
+        }) as any;
 
         currentCartId = response.cartId || response.cart?.id;
         if (currentCartId) {

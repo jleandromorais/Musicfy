@@ -1,9 +1,13 @@
 export class AppError extends Error {
-  constructor(
-    public readonly userMessage: string,
-    public readonly status?: number,
-    public readonly debugInfo?: unknown,
-  ) {
+  userMessage: string;
+  status?: number;
+  debugInfo?: unknown;
+
+  constructor(userMessage: string, status?: number, debugInfo?: unknown) {
+    super(userMessage);
+    this.userMessage = userMessage;
+    this.status = status;
+    this.debugInfo = debugInfo;
     super(userMessage);
     this.name = 'AppError';
   }

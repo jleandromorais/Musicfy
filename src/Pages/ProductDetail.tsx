@@ -7,7 +7,6 @@ import Footer from '../components/footer';
 import { fetchProduct, fetchProducts, type Product } from '../services/productApi';
 import { useCart } from '../contexts/CartContext';
 import { criarCarrinhoComItem, adicionarItemAoCarrinho } from '../services/cartApi';
-import ProductCardSkeleton from '../components/ProductCardSkeleton';
 
 import fhone from '../assets/imagens/photo.png';
 import headset from '../assets/imagens/gamer.png';
