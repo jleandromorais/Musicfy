@@ -5,6 +5,7 @@ import AuthPage from './Pages/Login';
 import Register from './Pages/Register';
 import Products from './components/Product';
 import ProductDetail from './Pages/ProductDetail';
+import Profile from './Pages/Profile';
 import Cart from './Pages/Cart';
 import CheckoutPage from './Pages/CheckoutPage';
 import { ToastContainer } from 'react-toastify';
@@ -36,6 +37,7 @@ function App() {
 
           {/* Rotas protegidas — exigem autenticação do usuário */}
           <Route element={<ProtectedRoute />}>
+            <Route path="/profile" element={<Profile />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/delivery" element={<DeliveryDetailsPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
