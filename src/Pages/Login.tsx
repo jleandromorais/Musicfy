@@ -46,7 +46,7 @@ const AuthPage = () => {
         email: user.email || email,
       };
 
-      const response = await fetch('https://back-musicfy-origin-3.onrender.com/api/usuario/criar', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/usuario/criar`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

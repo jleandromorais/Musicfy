@@ -1,6 +1,6 @@
 import { handleApiResponse } from './errorHandler';
 
-const API_BASE_URL = "https://back-musicfy-origin-3.onrender.com/api/carrinho";
+const API_BASE_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/carrinho`;
 
 export const fetchCart = async (cartId: number) => {
   const response = await fetch(`${API_BASE_URL}/${cartId}`);
